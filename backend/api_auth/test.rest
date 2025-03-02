@@ -1,0 +1,63 @@
+# should install 'REST Client' extintion in Visual Studio Code
+
+###
+
+
+POST http://127.0.0.1:8000//auth/login
+Content-Type: application/json
+
+{
+  "password" : "123456" ,
+  "email":"hasan@exmple.com"
+}
+
+###
+
+POST http://127.0.0.1:8000/auth/signup
+Content-Type: application/json
+
+{
+  "username": "hassan123453",
+  "password": "123456",
+  "email": "hasan@exmple.com",
+  "age": 30,
+  "phone": "123-456-7890",
+  "city": "Cairo",
+  "medical_insurance": true,
+  "region": "Nasr City",
+  "gender": "male"
+}
+
+###
+
+POST http://127.0.0.1:8000/auth/signup-doctor
+Content-Type: application/json
+
+{
+    "user": {
+        "username": "doctor1132121",
+        "email": "doctor@test1111.com",
+        "password": "test123",
+        "age": 35,
+        "phone": "1234567890",
+        "city": "Cairo",
+          "region": "Nasr City",
+  "gender": "male"
+    },
+    "specialization": "Cardiology",
+    "practice_permit": "CA-123"
+}
+
+
+###
+
+
+
+GET  http://127.0.0.1:8000/auth/test-token
+Content-Type: application/json
+Authorization: Token 272ae53c71d2a1de392bbc9b8aca316dd8f3563f
+
+
+
+
+###
