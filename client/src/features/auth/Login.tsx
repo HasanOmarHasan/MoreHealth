@@ -1,116 +1,64 @@
-import {
-  Form,
-  Link,
-  redirect,
-  useActionData,
-  useNavigation,
-} from "react-router-dom";
+// Login.tsx
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axiosClient from "../../utils/axiosClient";
 import Button from "../../ui/Button";
 import InputItem from "./InputItem";
-import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { useAuth } from "../../context/Auth";
 
-const validateField = (name: string, value: string) => {
-  switch (name) {
-    case "email":
-      if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value)) {
-        return "Invalid email address";
-      }
-      break;
-    case "password":
-      if (value.length < 6) {
-        return "Password must be at least 6 characters";
-      }
-      break;
-  }
-  return "";
-};
-
-export async function action({ request }: { request: Request }) {
-  const formData = await request.formData();
-  const requestData = Object.fromEntries(formData.entries());
-
-  try {
-    const response = await fetch("http://127.0.0.1:8000/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(requestData),
-    });
-
-    const data = await response.json();
-
-    
-    if (!response.ok) {
-      return  {
-        errors: {
-          ...data.errors,
-          general: data.message || "Login failed. Please try again."
-        }
-      }
-    }
-
-    const{user , token} = data
-    console.log(data)
-    localStorage.setItem("authToken", token);
-    localStorage.setItem("user", JSON.stringify(user));
-
-    console.log(user , token )
-    // console.log(response);
-    if (response.status === 200) {
-      toast.success(data.message);
-      return redirect("/");
-    }
-  } catch (err) {
-    return { errors: { general: "Login failed.", err } };
-  }
-}
-
-
-
-export default function Login() {
-  const actionData = useActionData() as { errors?: Record<string, string> };
-  const [localErrors, setLocalErrors] = useState<Record<string, string>>({});
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
+const Login = () => {
+  const navigate = useNavigate();
+  const { initializeAuth } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const errors = { ...actionData?.errors, ...localErrors };
-  const allTouched =
-    Object.keys(touched).length === Object.keys(formData).length;
-  const hasErrors = Object.values(errors).some((error) => error);
-  const isFormValid = allTouched && !hasErrors;
+  const validateField = (name: string, value: string) => {
+    const newErrors = { ...errors };
 
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setTouched((prev) => ({ ...prev, [name]: true }));
+    switch (name) {
+      case "email":
+        if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value)) {
+          newErrors.email = "Invalid email address";
+        } else {
+          delete newErrors.email;
+        }
+        break;
+      case "password":
+        if (value.length < 6) {
+          newErrors.password = "Password must be at least 6 characters";
+        } else {
+          delete newErrors.password;
+        }
+        break;
+    }
 
-    const error = validateField(name, value);
-    setLocalErrors((prev) => ({ ...prev, [name]: error }));
+    setErrors(newErrors);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
 
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setLocalErrors((prev) => ({ ...prev, [name]: "" }));
+    try {
+      const response = await axiosClient.post("/auth/login", formData);
+
+      localStorage.setItem("authToken", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      initializeAuth();
+
+      toast.success("Login successful!");
+      navigate("/");
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Login failed");
+    } finally {
+      setIsSubmitting(false);
     }
   };
-
-  useEffect(() => {
-    if (actionData?.errors?.general) {
-      console.log(actionData.errors.err)
-      console.log(actionData.errors)
-      toast.error(actionData.errors.general);
-    }
-  }, [actionData]);
-
-  const navigation = useNavigation();
-  const isLoading =
-    navigation.state === "loading" || navigation.state === "submitting";
 
   return (
     <div className="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
@@ -123,9 +71,10 @@ export default function Login() {
           Lorem ipsum dolor sit amet, consectetur adipisicing elit. Obcaecati
           sunt dolores deleniti inventore quaerat mollitia?
         </p>
+        {/* ... existing layout ... */}
 
-        <Form
-          method="POST"
+        <form
+          onSubmit={handleSubmit}
           className="mt-6 mb-0 space-y-4 rounded-lg p-4 shadow-lg sm:p-6 lg:p-8"
         >
           <p className="text-center text-lg font-medium">
@@ -135,37 +84,50 @@ export default function Login() {
             name="email"
             placeholder="Email"
             type="email"
-            error={touched.email ? errors.email : ""}
-            onBlur={handleBlur}
-            onChange={handleChange}
-            required={true}
+            value={formData.email}
+            onChange={(e) => {
+              setFormData({ ...formData, email: e.target.value });
+              validateField("email", e.target.value);
+            }}
+            error={errors.email}
+            required
           />
           <InputItem
             name="password"
             placeholder="Password"
             type="password"
-            error={touched.password ? errors.password : ""}
-            onBlur={handleBlur}
-            onChange={handleChange}
-            required={true}
+            value={formData.password}
+            onChange={(e) => {
+              setFormData({ ...formData, password: e.target.value });
+              validateField("password", e.target.value);
+            }}
+            error={errors.password}
+            required
           />
+
+          {/* Password input similarly */}
 
           <Button
-            content={isLoading ? "" : "Log in"}
             btnType="submit"
-            disabled={!isFormValid}
-            isLoading={isLoading}
+            disabled={
+              !formData.email ||
+              !formData.password ||
+              Object.keys(errors).length > 0
+            }
             width="w-full"
-          />
-
+            isLoading={isSubmitting}
+            content="Log in"
+          ></Button>
           <p className="text-center text-sm text-gray-500">
             No account?
             <Link className="underline" to="/signup">
               Sign up
             </Link>
           </p>
-        </Form>
+        </form>
       </div>
     </div>
   );
-}
+};
+
+export default Login;

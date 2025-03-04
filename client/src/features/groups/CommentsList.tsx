@@ -109,6 +109,11 @@ const CommentsList = () => {
                 <ReactTimeAgo date={comment.created_at} locale="en-US" />
                 
               </span>
+              {comment.user?.type === "doctor" && (
+                            <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                              Verified Doctor
+                            </span>
+                          )}
             </div>
 
             {/* Comment Body */}
@@ -240,6 +245,8 @@ const CommentsList = () => {
 
   if (!numericQuestionId) return <div>Select a question first</div>;
   if (isLoading) return <Loader />;
+
+  console.log(comments)
 
   return (
     <div className="max-w-3xl mx-auto py-8">

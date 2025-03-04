@@ -7,9 +7,18 @@ from django_filters import rest_framework as filters
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
+    type = serializers.CharField(read_only=True)
+    specialization = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ['id', 'username']
+        fields = ['id', 'username', 'type', 'specialization']
+
+    def get_specialization(self, obj):
+        # Check if the user is a doctor and has a profile
+        if obj.type == 'doctor' and hasattr(obj, 'doctor_profile'):
+            return obj.doctor_profile.specialization
+        return None
 
 class GroupSerializer(serializers.ModelSerializer):
     creator = UserSerializer(read_only=True)
@@ -24,11 +33,16 @@ class GroupSerializer(serializers.ModelSerializer):
 class QuestionSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     upvotes = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    members = serializers.SerializerMethodField()
 
     class Meta:
         model = Question
-        fields = ['id', 'title', 'content', 'group', 'user', 'created_at', 'upvotes']
-        read_only_fields = ['group', 'user', 'created_at', 'upvotes']
+        fields = ['id', 'title', 'content', 'group', 'user', 'created_at', 'upvotes', 'members']
+        read_only_fields = ['group', 'user', 'created_at', 'upvotes', 'members']
+    def get_members(self, obj):
+        group = obj.group  # Get the group linked to the question
+        members = group.members.all()  # Fetch all members of the group
+        return UserSerializer(members, many=True).data  # Serialize members
 
 class CommentSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)

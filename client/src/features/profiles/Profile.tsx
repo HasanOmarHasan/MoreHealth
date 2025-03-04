@@ -1,6 +1,6 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/Auth.tsx"; 
-import Avatar from '../../assets/img/avatar.svg'
+import { Link, Outlet, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/Auth.tsx";
+import Avatar from "../../assets/img/avatar.svg";
 
 interface MenuItem {
   label: string;
@@ -12,12 +12,14 @@ export default function Profile() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const userType = user?.type || 'patient'; // Default to patient if no user
+  const userType = user?.type || "patient"; // Default to patient if no user
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
+  const chats = { label: "Chats", path: "/profile/chat-room" }
+  
 
   const menuConfig: Record<string, MenuItem[]> = {
     doctor: [
@@ -31,8 +33,10 @@ export default function Profile() {
           { label: "Schedule", path: "/doctor/schedule" },
         ],
       },
-      { label: "العيادة", path: "/doctor/appointments" },
-      { label: "احا", path: "/doctor/billing" },
+      { label: "Clinic", path: "/doctor/appointments" },
+      // { label: "احا", path: "/doctor/billing" },
+      chats,
+      
     ],
     patient: [
       { label: "General", path: "/profile" },
@@ -45,7 +49,7 @@ export default function Profile() {
           { label: "Medical History", path: "/profile#" },
         ],
       },
-      { label: "Payments", path: "/profile" },
+      chats,
       { label: "Insurance", path: "/profile#" },
     ],
   };
@@ -149,9 +153,7 @@ export default function Profile() {
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[200px_1fr] lg:gap-8">
       <div className="flex h-screen flex-col justify-between border-e bg-white">
-        <div className="px-4 py-6">
-          {renderMenuItems(menuConfig[userType])}
-        </div>
+        <div className="px-4 py-6">{renderMenuItems(menuConfig[userType])}</div>
 
         <div className="sticky inset-x-0 bottom-0 border-t border-gray-100">
           <div className="flex items-center gap-2 bg-white p-4 hover:bg-gray-50">
@@ -174,6 +176,7 @@ export default function Profile() {
 
       <div className="bg">
         {/* Main content area */}
+        <Outlet />
       </div>
     </div>
   );

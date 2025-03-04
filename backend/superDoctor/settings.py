@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
      'corsheaders',
      'groups.apps.GroupsConfig',
+     'chat.apps.ChatConfig',
      'taggit',
       'django_filters',
 ]

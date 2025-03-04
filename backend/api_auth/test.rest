@@ -36,7 +36,7 @@ Content-Type: application/json
 {
     "user": {
         "username": "doctor1132121",
-        "email": "doctor@test1111.com",
+        "email": "doctor@test.com",
         "password": "test123",
         "age": 35,
         "phone": "1234567890",

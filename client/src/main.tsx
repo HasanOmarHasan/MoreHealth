@@ -9,10 +9,8 @@ import {
 } from "react-router-dom";
 import AppLayout from "./ui/AppLayout/AppLayout";
 import Home from "./ui/home/Home";
-import Login, { action as loginAction } from "./features/auth/Login";
 import "./index.css";
 import Error from "./ui/Error";
-import Signup, { action as signupAction } from "./features/auth/Signup";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Profile from "./features/profiles/Profile";
@@ -20,7 +18,12 @@ import { AuthProvider } from "./context/Auth";
 import Groups from "./features/groups/Groups";
 import QuestionList from "./features/groups/QuestionList";
 import CommentsList from "./features/groups/CommentsList";
-// import { loginAction, signupAction } from "./auth-actions";
+import Chat from "./features/profiles/Chat/Chat";
+import Messages from "./features/profiles/Chat/Messages";
+
+import Login from "./features/auth/Login";
+
+import SignupForm from "./features/auth/SignupForm";
 
 const router = createBrowserRouter([
   {
@@ -29,24 +32,35 @@ const router = createBrowserRouter([
     children: [
       { path: "*", element: <Error /> },
       { path: "/", element: <Home /> },
-      { path: "/login", action: loginAction, element: <Login /> },
+      { path: "/login", element: <Login /> },
       {
-        path: "/Profile",
+        path: "/Profile/",
         element: <Profile />,
-        children: [{}],
-        loader :()=>{
+        children: [
+          { path: "chat-room", element: <Chat /> },
+          { path: "messages/:roomId/", element: <Messages /> },
+        ],
+        loader: () => {
           if (!localStorage.getItem("authToken")) {
             return redirect("/login");
           }
           return null;
-          
-        }
+        },
+      },
+
+      {
+        path: "/signup/patient",
+        element: <SignupForm userType="patient" endpoint="/auth/signup" />,
       },
       {
-        path: "/signup",
-
-        element: <Signup />,
-        action: signupAction,
+        path: "/signup/doctor",
+        element: (
+          <SignupForm userType="doctor" endpoint="/auth/signup-doctor" />
+        ),
+      },
+      {
+        path: "/blog/*",
+        element: <div className="h-screen"> blog </div>,
       },
       {
         path: "/groups/*",
@@ -57,13 +71,14 @@ const router = createBrowserRouter([
         element: <QuestionList />,
       },
       {
-        path:"/groups/:groupId/questions/:questionId" ,element:<CommentsList /> ,loader :()=>{
+        path: "/groups/:groupId/questions/:questionId",
+        element: <CommentsList />,
+        loader: () => {
           if (!localStorage.getItem("authToken")) {
             return redirect("/login");
           }
           return null;
-          
-        }
+        },
       },
     ],
   },

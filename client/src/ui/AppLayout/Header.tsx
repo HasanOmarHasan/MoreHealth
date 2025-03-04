@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import avater from "../../assets/img/avatar.svg";
-import { useAuth } from "../../context/Auth"; // Adjust the import path
+import { useAuth } from "../../context/Auth";
 
 export default function Header() {
   const [isServicesOpen, setIsServicesOpen] = useState(false);
@@ -12,6 +12,14 @@ export default function Header() {
   const toggleServicesDropdown = () => setIsServicesOpen(!isServicesOpen);
   const toggleUserMenuDropdown = () => setIsUserMenuOpen(!isUserMenuOpen);
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+
+  // Create refs for dropdown elements
+  const servicesTriggerRef = useRef<HTMLButtonElement>(null);
+  const servicesDropdownRef = useRef<HTMLDivElement>(null);
+  const userMenuTriggerRef = useRef<HTMLButtonElement>(null);
+  const userMenuDropdownRef = useRef<HTMLDivElement>(null);
+  const mobileMenuTriggerRef = useRef<HTMLButtonElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = () => {
     logout();
@@ -55,19 +63,20 @@ export default function Header() {
 
     const commonLinks = [
       { to: "/profile", text: "General" },
-      { to: "/profile", text: "Account" }
+      { to: "/profile", text: "Account" },
     ];
 
-    const roleSpecificLinks = user?.type === 'patient' 
-      ? [
-          { to: "/profile", text: "My Doctor" },
-          { to: "/profile", text: "Bookings" }
-        ]
-      : [
-          { to: "/profile", text: "Management Team" },
-          { to: "/profile", text: "Management Patients" },
-          { to: "/profile", text: "ادارة العيادة " },
-        ];
+    const roleSpecificLinks =
+      user?.type === "patient"
+        ? [
+            { to: "/profile", text: "My Doctor" },
+            { to: "/profile", text: "Bookings" },
+          ]
+        : [
+            { to: "/profile", text: "Management Team" },
+            { to: "/profile/chat-room", text: "Management Patients" },
+            { to: "/profile", text: "Clinic" },
+          ];
 
     return (
       <>
@@ -111,13 +120,71 @@ export default function Header() {
     );
   };
 
+  // Handle click outside for services dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isServicesOpen &&
+        servicesTriggerRef.current &&
+        servicesDropdownRef.current &&
+        !servicesTriggerRef.current.contains(event.target as Node) &&
+        !servicesDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsServicesOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isServicesOpen]);
+
+  // Handle click outside for user menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isUserMenuOpen &&
+        userMenuTriggerRef.current &&
+        userMenuDropdownRef.current &&
+        !userMenuTriggerRef.current.contains(event.target as Node) &&
+        !userMenuDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isUserMenuOpen]);
+
+  // Handle click outside for mobile menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isMobileMenuOpen &&
+        mobileMenuTriggerRef.current &&
+        mobileMenuRef.current &&
+        !mobileMenuTriggerRef.current.contains(event.target as Node) &&
+        !mobileMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMobileMenuOpen]);
+
   return (
-    <header className="bg-white/50 sticky top-0 z-50 backdrop-blur-sm">
+    //  bg-white/50
+    <header className=" sticky top-0 z-50 backdrop-blur-sm bg-blue-100/50">
       <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="md:flex md:items-center md:gap-12">
-            <Link className="block text-black text-xl font-semibold tracking-wider" to="/">
+            <Link
+              className="block text-black text-xl font-semibold tracking-wider"
+              to="/"
+            >
               <span>More Health</span>
             </Link>
           </div>
@@ -127,26 +194,41 @@ export default function Header() {
             <ul className="flex items-center gap-6 text-base">
               <li>
                 <button
-                  className="cursor-pointer text-gray-500 transition hover:text-gray-500/75 inline-flex justify-center w-full items-center"
+                  className={`cursor-pointer text-gray-500 transition hover:text-gray-500/75 inline-flex justify-center w-full items-center  `}
                   onClick={toggleServicesDropdown}
                   aria-expanded={isServicesOpen}
+                  ref={servicesTriggerRef}
                 >
                   Services
                   <svg
-                    className="ml-1 -mr-1 h-5 w-5"
+                    className={`ml-1 -mr-1 h-5 w-5 transition-transform duration-200 ${
+                      isServicesOpen ? " rotate-180" : ""
+                    }`}
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
 
                 {isServicesOpen && (
-                  <div className="absolute mt-0.5 w-56 divide-y divide-gray-100 rounded-md border border-gray-100 bg-white shadow-lg">
+                  <div
+                    ref={servicesDropdownRef}
+                    className="absolute mt-0.5 w-56 divide-y divide-gray-100 rounded-md border border-gray-100 bg-white shadow-lg"
+                  >
                     <div className="p-2">
-                      {['Book a consultation', 'Symptom analysis', 'Medical laboratories'].map((service, index) => (
+                      {[
+                        "Book a consultation",
+                        "Symptom analysis",
+                        "Medical laboratories",
+                      ].map((service, index) => (
                         <Link
                           key={index}
                           to="#"
@@ -161,10 +243,16 @@ export default function Header() {
                 )}
               </li>
 
-              {['Groups', 'Blog'].map((link, index) => (
+              {[
+                { linkName: "Groups", to: "/groups" },
+                { linkName: "Blog", to: "/blog" },
+              ].map((link, index) => (
                 <li key={index}>
-                  <Link className="text-gray-500 transition hover:text-gray-500/75" to="/groups">
-                    {link}
+                  <Link
+                    className="text-gray-500 transition hover:text-gray-500/75"
+                    to={link.to}
+                  >
+                    {link.linkName}
                   </Link>
                 </li>
               ))}
@@ -175,20 +263,28 @@ export default function Header() {
           <div className="md:flex md:items-center md:gap-12">
             <div className="hidden md:relative md:block">
               <button
+                ref={userMenuTriggerRef}
                 type="button"
                 className="overflow-hidden rounded-full border border-gray-300 shadow-inner"
                 onClick={toggleUserMenuDropdown}
                 aria-expanded={isUserMenuOpen}
               >
                 <span className="sr-only">Toggle dashboard menu</span>
-                <img src={avater} alt="user avatar" className="size-10 object-cover" />
+                <img
+                  src={avater}
+                  alt="user avatar"
+                  className="size-10 object-cover"
+                />
                 {!isLoggedIn && (
                   <span className="absolute top-0 left-8 rounded-full size-4 bg-red-400 text-sm transform -translate-y-1 border-2 border-white" />
                 )}
               </button>
 
               {isUserMenuOpen && (
-                <div className="absolute end-0 z-10 mt-0.5 w-56 divide-y divide-gray-100 rounded-md border border-gray-100 bg-white shadow-lg">
+                <div
+                  ref={userMenuDropdownRef}
+                  className="absolute end-0 z-10 mt-0.5 w-56 divide-y divide-gray-100 rounded-md border border-gray-100 bg-white shadow-lg"
+                >
                   {renderDropdownContent()}
                 </div>
               )}
@@ -197,6 +293,7 @@ export default function Header() {
             {/* Mobile Menu Button */}
             <div className="block md:hidden">
               <button
+                ref={mobileMenuTriggerRef}
                 onClick={toggleMobileMenu}
                 className={`rounded-sm bg-gray-100 p-2 text-gray-600 transition hover:text-gray-600/75 ${
                   isMobileMenuOpen ? "active-mobile-menu-button" : ""
@@ -211,7 +308,11 @@ export default function Header() {
                   stroke="currentColor"
                   strokeWidth="2"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 </svg>
               </button>
             </div>
@@ -220,16 +321,27 @@ export default function Header() {
       </div>
 
       {/* Mobile Menu */}
-      <div className={`md:hidden ${isMobileMenuOpen ? "block" : "hidden"}`}>
+      <div
+        ref={mobileMenuRef}
+        className={`md:hidden ${isMobileMenuOpen ? "block" : "hidden"}`}
+      >
         <div className="bg-gray-100 p-4">
-          {['Services', 'Forum', 'Blog', isLoggedIn ? 'Dashboard' : 'Login'].map((link, index) => (
+          {[
+            { linkName: "Service", to: "#" },
+            { linkName: "Groups", to: "/groups" },
+            { linkName: "Blog", to: "/blog" },
+            {
+              linkName: isLoggedIn ? "Dashboard" : "Login",
+              to: isLoggedIn ? "/profile" : "Login",
+            },
+          ].map((link, index) => (
             <Link
               key={index}
-              to={link === 'Login' ? '/login' : link === 'Dashboard' ? '/profile' : '#'}
+              to={link.to}
               className="block py-2 px-4 text-sm text-gray-500 hover:bg-gray-200"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              {link}
+              {link.linkName}
             </Link>
           ))}
         </div>
