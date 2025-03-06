@@ -22,8 +22,9 @@ import Chat from "./features/profiles/Chat/Chat";
 import Messages from "./features/profiles/Chat/Messages";
 
 import Login from "./features/auth/Login";
-
 import SignupForm from "./features/auth/SignupForm";
+
+
 
 const router = createBrowserRouter([
   {
@@ -83,6 +84,7 @@ const router = createBrowserRouter([
     ],
   },
 ]);
+
 
 const queryClient = new QueryClient();
 ReactDOM.createRoot(document.getElementById("root")!).render(

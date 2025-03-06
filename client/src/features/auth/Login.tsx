@@ -120,7 +120,7 @@ const Login = () => {
           ></Button>
           <p className="text-center text-sm text-gray-500">
             No account?
-            <Link className="underline" to="/signup">
+            <Link className="underline" to="/signup/patient">
               Sign up
             </Link>
           </p>

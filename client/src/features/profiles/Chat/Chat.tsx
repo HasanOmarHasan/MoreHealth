@@ -5,11 +5,12 @@ import { useAuth } from "../../../context/Auth";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Loader from "../../../ui/Loader";
-import ReactTimeAgo from "react-time-ago";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify"
-import TimeAgo from "javascript-time-ago";
-import en from "javascript-time-ago/locale/en";;
+import ReactTimeAgo from "react-time-ago";
+
+
+import  '../../../utils/timeAgoConfig';
 
 interface ChatRoom {
   id: number;
@@ -36,7 +37,7 @@ interface Friend {
 interface FriendRequest extends Friend {}
 
 const Chat = () => {
-  TimeAgo.addDefaultLocale(en);
+
 
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -46,7 +47,7 @@ const Chat = () => {
   const { data: chatRooms, isLoading: roomsLoading } = useQuery<ChatRoom[]>({
     queryKey: ["chatRooms"],
     queryFn: () => axiosClient.get("/chat/chat-rooms/").then((res) => res.data),
-  });
+});
 
   const { data: friends, isLoading: friendsLoading } = useQuery<Friend[]>({
     queryKey: ["friends"],

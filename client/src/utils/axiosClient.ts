@@ -29,6 +29,7 @@ export const addFriend = (userId: number) => axiosClient.post(`/chat/friends/${u
 export const startChat = (userId: number) => axiosClient.post(`/chat/start-chat/${userId}/`);
 
 
+
 export default axiosClient;
 
 

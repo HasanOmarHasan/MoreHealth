@@ -7,9 +7,10 @@ import { toast } from "react-toastify";
 import { useState } from "react";
 import Loader from "../../ui/Loader";
 import { useParams } from "react-router-dom";
-import TimeAgo from 'javascript-time-ago'
-import en from 'javascript-time-ago/locale/en'
+
 import ReactTimeAgo from "react-time-ago";
+import  '../../utils/timeAgoConfig';
+
 
 interface Comment {
   id: number;
@@ -36,7 +37,6 @@ const CommentsList = () => {
   const [editContent, setEditContent] = useState("");
 
   const numericQuestionId = parseInt(questionId || "", 10);
-  TimeAgo.addDefaultLocale(en)
 
   const { data: comments, isLoading } = useQuery<Comment[]>({
     queryKey: ["comments", numericQuestionId],

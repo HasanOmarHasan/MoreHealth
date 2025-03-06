@@ -8,8 +8,8 @@ import Loader from "../../../ui/Loader";
 import ReactTimeAgo from "react-time-ago";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
-import TimeAgo from "javascript-time-ago";
-import en from "javascript-time-ago/locale/en";
+
+import '../../../utils/timeAgoConfig';
 
 interface Message {
   id: number;
@@ -29,7 +29,6 @@ const Messages = () => {
   const navigate = useNavigate();
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  TimeAgo.addDefaultLocale(en);
 
   // console.log(user)
   // Fetch messages

@@ -17,6 +17,8 @@ from .serializers import (
     FriendshipWriteSerializer
 )
 from .permissions import IsRoomParticipant
+from django.db.models import Count
+
 
 User = get_user_model()
 
@@ -35,6 +37,22 @@ class ChatRoomListView(APIView):
         )
         return Response(serializer.data)
 
+# class StartPrivateChatView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, user_id):
+#         other_user = get_object_or_404(User, id=user_id)
+#         if other_user == request.user:
+#             return Response(
+#                 {"detail": "Cannot start chat with yourself."},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+#         chat_room, created = ChatRoom.get_or_create_private_chat(request.user, other_user)
+#         return Response({
+#             'room_id': chat_room.id,
+#             'created': created
+#         }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
 class StartPrivateChatView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -45,12 +63,31 @@ class StartPrivateChatView(APIView):
                 {"detail": "Cannot start chat with yourself."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        chat_room, created = ChatRoom.get_or_create_private_chat(request.user, other_user)
-        return Response({
-            'room_id': chat_room.id,
-            'created': created
-        }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+        
+        # Check for existing private chat between the two users
+        existing_chat = ChatRoom.objects.annotate(
+            num_participants=Count('participants')
+        ).filter(
+            participants=request.user
+        ).filter(
+            participants=other_user
+        ).filter(
+            num_participants=2
+        ).first()
 
+        if existing_chat:
+            return Response({
+                'room_id': existing_chat.id,
+                'created': False
+            }, status=status.HTTP_200_OK)
+        else:
+            # Create new private chat
+            chat_room = ChatRoom.objects.create()
+            chat_room.participants.add(request.user, other_user)
+            return Response({
+                'room_id': chat_room.id,
+                'created': True
+            }, status=status.HTTP_201_CREATED)
 class MessageView(APIView):
     # permission_classes = [IsAuthenticated]
     serializer_class = MessageSerializer

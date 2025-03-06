@@ -7,9 +7,11 @@ import { toast } from "react-toastify";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Loader from "../../ui/Loader";
-import TimeAgo from "javascript-time-ago";
-import en from "javascript-time-ago/locale/en";
+
 import ReactTimeAgo from "react-time-ago";
+
+import  '../../utils/timeAgoConfig';
+
 
 interface Question {
   id?: number;
@@ -33,7 +35,6 @@ const QuestionList = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-  TimeAgo.addDefaultLocale(en);
 
   const { data: questions, isLoading } = useQuery({
     queryKey: ["questions", groupId, debouncedSearchTerm],
@@ -179,7 +180,9 @@ const QuestionList = () => {
 
     onError: (error) => {
       console.log(error)
-      toast.error("Failed to send friend request");
+      // toast.error("Failed to send friend request");
+      toast.error(error.response?.data?.detail);
+    
     },
   });
 
@@ -187,10 +190,11 @@ const QuestionList = () => {
   const startChatMutation = useMutation({
     mutationFn: (userId: number) => startChat(userId),
     onSuccess: (data) => {
-      // console.log(data)
+      
+      navigate(`/profile/Messages/${data.data.room_id}`);
       toast.success("Chat started successfully!");
-      // toast.success(data.data.statusText);
-      navigate(`profile/Messages/${data.data.room_id}`);
+      console.log(data)
+      // toast.success(data.data);
     },
   
     onError: (error) => {

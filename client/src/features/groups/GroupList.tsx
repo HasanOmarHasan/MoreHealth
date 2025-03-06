@@ -9,9 +9,10 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Loader from "../../ui/Loader";
 
-import TimeAgo from "javascript-time-ago";
-import en from "javascript-time-ago/locale/en";
 import ReactTimeAgo from "react-time-ago";
+
+import  '../../utils/timeAgoConfig';
+
 
 import imgLandscape from "../../assets/img/img-landscape.svg";
 
@@ -34,7 +35,6 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   // const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  TimeAgo.addDefaultLocale(en);
 
   const { data: groups, isLoading } = useQuery({
     queryKey: ["groups", debouncedSearchTerm],
@@ -346,7 +346,7 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
 
           {!isLoading && groups.length > 0 && (
             <>
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8 ">
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8 md:grid-cols-2 ">
                 {groups?.map((group) => (
                   <div className="" key={group.id}>
                     <article className="overflow-hidden rounded-lg shadow-sm transition hover:shadow-lg">
