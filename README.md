@@ -42,7 +42,9 @@ MoreHealth is an AI-driven health assistant platform where users interact with a
 * **Node.js 16+**
 * **npm 8+**
 * **Python virtualenv**
+* **pip / virtualenv**
 * **PostgreSQL client**
+
 
 ---
 
