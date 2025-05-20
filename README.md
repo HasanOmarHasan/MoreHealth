@@ -3,8 +3,8 @@ MoreHealth is an AI-driven health assistant platform where users interact with a
 
 ## High-Level Architecture
 
-* **Backend**: Django (4.0+) with PostgreSQL (12+) database, using Django REST Framework for API endpoints
-* **Frontend**: React (18+) with modern hooks and state management
+* **Backend**: Django (5) with PostgreSQL database, using Django REST Framework for API endpoints
+* **Frontend**: React (19) with modern hooks and state management
 * **Authentication**: JWT-based security with email verification
 * **Communication**: Real-time chat system (Socket.IO) and community forum
 
@@ -14,10 +14,10 @@ MoreHealth is an AI-driven health assistant platform where users interact with a
 
 ### Backend Stack
 
-* **Python 3.9+**
-* **Django 4.0+**
+* **Python 3.13**
+* **Django 5**
 * **Django REST Framework**
-* **PostgreSQL 12+**
+* **PostgreSQL **
 * **Additional Packages**:
 
   * `django-cors-headers` for CORS management
@@ -105,7 +105,12 @@ MoreHealth is an AI-driven health assistant platform where users interact with a
 4. **Access the Application**
 
    * Frontend: `http://localhost:3000`
-   * API: `http://localhost:8000/api`
+   * API: `http://localhost:8000/`
+   * sign up as doctor : `http://127.0.0.1:8000/auth/signup-doctor`
+   * sign up as regleur user : `http://127.0.0.1:8000/auth/signup`
+   * login : `http://127.0.0.1:8000//auth/login`
+   * test token : ` http://127.0.0.1:8000/auth/test-token`
+   * 
 
 ---
 
@@ -115,7 +120,7 @@ MoreHealth is an AI-driven health assistant platform where users interact with a
 
 * **User Registration**: Registration with email verification via Google SMTP
 * **Password Management**: Forgot password and secure reset tokens
-* **JWT Authentication**: Access and refresh tokens to secure API endpoints
+* **JWT Authentication**: Access and refresh tokens to secure API endpoints 
 * **Protected Endpoints**: Role-based access control for sensitive resources
 
 ### User Profile Management
@@ -141,7 +146,19 @@ MoreHealth is an AI-driven health assistant platform where users interact with a
 * **Discussion Groups**: Create and join topic-based communities
 * **Q\&A System**: Post questions with threaded replies and comments
 * **Content Moderation**: Edit or delete your own posts and replies
-* **Advanced Search**: Filter by tags, popularity, or recency
+* **Advanced Search**: Filter , popularity, or recency , can search by groub name , mamber name , creater , username , own groub , describtion and so in 
 * **Edit Tracking**: Visual indicators showing when content was last modified
+
+### Admin Verification:
+
+* Admin dashboard for verifying doctor profiles
+* Review submitted credentials and certifications
+* Approve or reject doctor accounts based on verification status
+* Role assignment for verified doctors with elevated permissions
+
+
+
+---
+
 
 
