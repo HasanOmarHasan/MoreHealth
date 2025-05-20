@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import avater from "../../assets/img/avatar.svg";
+import logo from "../../assets/img/logo.png";
 import { useAuth } from "../../context/Auth";
 
 export default function Header() {
@@ -62,20 +63,20 @@ export default function Header() {
     }
 
     const commonLinks = [
-      { to: "/profile", text: "General" },
-      { to: "/profile", text: "Account" },
+      { to: "/profile/General", text: "General" },
+      { to: "/profile/Account", text: "Account" },
     ];
 
     const roleSpecificLinks =
       user?.type === "patient"
         ? [
-            { to: "/profile", text: "My Doctor" },
-            { to: "/profile", text: "Bookings" },
+            { to: "/profile/chat-room", text: "My Chats with Doctor" },
+            // { to: "/profile", text: "Bookings" },
           ]
         : [
-            { to: "/profile", text: "Management Team" },
+            // { to: "/profile", text: "Management Team" },
             { to: "/profile/chat-room", text: "Management Patients" },
-            { to: "/profile", text: "Clinic" },
+            // { to: "/profile", text: "Clinic" },
           ];
 
     return (
@@ -185,7 +186,8 @@ export default function Header() {
               className="block text-black text-xl font-semibold tracking-wider"
               to="/"
             >
-              <span>More Health</span>
+              {/* <span>More Health</span> */}
+              <img src={logo} alt="logo" className="h-40 w-40" />
             </Link>
           </div>
 
@@ -199,7 +201,7 @@ export default function Header() {
                   aria-expanded={isServicesOpen}
                   ref={servicesTriggerRef}
                 >
-                  Services
+                  More Services
                   <svg
                     className={`ml-1 -mr-1 h-5 w-5 transition-transform duration-200 ${
                       isServicesOpen ? " rotate-180" : ""
@@ -228,6 +230,7 @@ export default function Header() {
                         "Book a consultation",
                         "Symptom analysis",
                         "Medical laboratories",
+                        "All Services",
                       ].map((service, index) => (
                         <Link
                           key={index}
@@ -245,7 +248,7 @@ export default function Header() {
 
               {[
                 { linkName: "Groups", to: "/groups" },
-                { linkName: "Blog", to: "/blog" },
+                { linkName: "Ai Chat", to: "/ai-chat" },
               ].map((link, index) => (
                 <li key={index}>
                   <Link
@@ -329,7 +332,7 @@ export default function Header() {
           {[
             { linkName: "Service", to: "#" },
             { linkName: "Groups", to: "/groups" },
-            { linkName: "Blog", to: "/blog" },
+            { linkName: "Ai Chat", to: "/ai-chat" },
             {
               linkName: isLoggedIn ? "Dashboard" : "Login",
               to: isLoggedIn ? "/profile" : "Login",
@@ -344,6 +347,17 @@ export default function Header() {
               {link.linkName}
             </Link>
           ))}
+          <ul>
+
+            <li>
+              <button
+                onClick={handleLogout}
+                className="w-full rounded-lg px-4 py-2 text-left text-sm font-medium text-red-400 hover:bg-red-100 hover:text-red-600"
+              >
+                Logout
+              </button>
+            </li>
+          </ul>
         </div>
       </div>
     </header>

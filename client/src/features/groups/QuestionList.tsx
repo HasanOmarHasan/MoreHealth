@@ -1,6 +1,6 @@
 // src/features/questions/QuestionList.tsx
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axiosClient, { addFriend, startChat } from "../../utils/axiosClient";
+import axiosClient, { addFriend, startChat } from "../../services/axiosClient";
 import { useAuth } from "../../context/Auth";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
@@ -10,8 +10,7 @@ import Loader from "../../ui/Loader";
 
 import ReactTimeAgo from "react-time-ago";
 
-import  '../../utils/timeAgoConfig';
-
+import "../../utils/timeAgoConfig";
 
 interface Question {
   id?: number;
@@ -23,8 +22,15 @@ interface Question {
   tags: string[];
   group: number;
 }
+// interface Comment {
+//   id: number;
+//   question: number;
+// }
+
+// const MAX_CONTENT_PREVIEW = 150;
 
 const QuestionList = () => {
+  // const [expandedQuestions, setExpandedQuestions] = useState<Record<number, boolean>>({});
   const { groupId } = useParams<{ groupId: string }>();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -121,14 +127,6 @@ const QuestionList = () => {
     },
   });
 
-  // groups/upvote/comment/10/
-  // const upvoteMutation = useMutation({
-  //   mutationFn: (questionId: number) =>
-  //     axiosClient.post(`/groups/upvote/question/${questionId}/`),
-  //   onSuccess: () => {
-  //     queryClient.invalidateQueries(["questions", groupId]);
-  //   },
-  // });
   const upvoteMutation = useMutation({
     mutationFn: (questionId: number) =>
       axiosClient.post(`/groups/upvote/question/${questionId}/`),
@@ -174,15 +172,16 @@ const QuestionList = () => {
     mutationFn: (userId: number) => addFriend(userId),
     onSuccess: (data) => {
       // console.log(data)
-      
-      toast.success(`Friend request sent successfully! the state is ${data.data.status}`);
+
+      toast.success(
+        `Friend request sent successfully! the state is ${data.data.status}`
+      );
     },
 
     onError: (error) => {
-      console.log(error)
+      console.log(error);
       // toast.error("Failed to send friend request");
       toast.error(error.response?.data?.detail);
-    
     },
   });
 
@@ -190,15 +189,14 @@ const QuestionList = () => {
   const startChatMutation = useMutation({
     mutationFn: (userId: number) => startChat(userId),
     onSuccess: (data) => {
-      
       navigate(`/profile/Messages/${data.data.room_id}`);
       toast.success("Chat started successfully!");
-      console.log(data)
+      console.log(data);
       // toast.success(data.data);
     },
-  
+
     onError: (error) => {
-      console.log(error)
+      console.log(error);
       toast.error("Failed to start chat");
     },
   });
@@ -233,12 +231,6 @@ const QuestionList = () => {
   if (!groupId) return <div>No group selected</div>;
 
   console.log(questions);
-  // console.log(questions[0]?.members);
-
-  //   let members = [];
-  //   questions.length !== 0 && members = questions[0]?.members
-
-  //  console.log(members)
 
   return (
     <>
@@ -283,63 +275,67 @@ const QuestionList = () => {
             </button>
           </div>
           {/* empity  statement */}
-          {/* {questions?.length === 0 && <p className="text-gray-600 font-bold"> No questions yet start add one  </p>} */}
+
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8">
-              <div className="lg:col-span-2">
+            <div className="lg:col-span-2">
               {!isLoading && questions.length === 0 && (
-  <div className="col-span-full py-12 text-center">
-    <div className="max-w-md mx-auto">
-      <svg
-        className="mx-auto h-12 w-12 text-gray-400"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-        />
-      </svg>
-      
-      <h3 className="mt-2 text-lg font-medium text-gray-900">
-        {debouncedSearchTerm ? (
-          <>No questions found for "{debouncedSearchTerm}"</>
-        ) : (
-          <>No questions yet</>
-        )}
-      </h3>
-      <p className="mt-1 text-sm text-gray-500">
-        {debouncedSearchTerm
-          ? "Try adjusting your search "
-          : "Get started by creating a new question"}
-      </p>
-      <div className="mt-6">
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          <svg
-            className="-ml-1 mr-2 h-5 w-5"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              fillRule="evenodd"
-              d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-              clipRule="evenodd"
-            />
-          </svg>
-          Create question
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-              <div className="space-y-6 h-screen">
+                <div className="col-span-full py-12 text-center">
+                  <div className="max-w-md mx-auto">
+                    <svg
+                      className="mx-auto h-12 w-12 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                      />
+                    </svg>
+
+                    <h3 className="mt-2 text-lg font-medium text-gray-900">
+                      {debouncedSearchTerm ? (
+                        <>No questions found for "{debouncedSearchTerm}"</>
+                      ) : (
+                        <>No questions yet</>
+                      )}
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-500">
+                      {debouncedSearchTerm
+                        ? "Try adjusting your search "
+                        : "Get started by creating a new question"}
+                    </p>
+                    <div className="mt-6">
+                      <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        <svg
+                          className="-ml-1 mr-2 h-5 w-5"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Create question
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div
+                className={`space-y-6   ${
+                  questions?.length <= 2 && "h-screen"
+                }`}
+              >
                 {questions?.map((question) => (
                   <motion.div
                     key={question.id}
@@ -373,7 +369,21 @@ const QuestionList = () => {
                         >
                           <h3 className="text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors">
                             {question.title}
+                            {new Date(question?.updated_at).getTime() >
+                              new Date(question?.created_at).getTime() && (
+                              <span className="text-xs text-gray-500 ml-2 italic font-regular">
+                                (edited at{" "}
+                                {
+                                  <ReactTimeAgo
+                                    date={question.updated_at}
+                                    locale="en-US"
+                                  />
+                                }
+                                )
+                              </span>
+                            )}
                           </h3>
+
                           <p className="mt-2 text-gray-600 line-clamp-3">
                             {question.content}
                           </p>
@@ -543,7 +553,7 @@ const QuestionList = () => {
                           {member.username}
                           {member.type === "doctor" && (
                             <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                              Verified Doctor
+                              Doctor
                             </span>
                           )}
                         </h3>
@@ -554,9 +564,7 @@ const QuestionList = () => {
                         )}
                       </div>
 
-                      {(member.id !== user?.id && member.type === "doctor")
-                      // {( member.type === "doctor")
-                        && (
+                      {member.id !== user?.id && member.type === "doctor" && (
                         <div className="flex gap-2 ml-4">
                           <button
                             onClick={() => addFriendMutation.mutate(member.id)}

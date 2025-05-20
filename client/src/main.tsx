@@ -23,8 +23,10 @@ import Messages from "./features/profiles/Chat/Messages";
 
 import Login from "./features/auth/Login";
 import SignupForm from "./features/auth/SignupForm";
-
-
+import General from "./features/profiles/General";
+import Account from "./features/profiles/Account";
+import DeleteAccount from "./features/profiles/DeleteAccount";
+import ResetPassword from "./features/profiles/ResetPassword";
 
 const router = createBrowserRouter([
   {
@@ -33,13 +35,25 @@ const router = createBrowserRouter([
     children: [
       { path: "*", element: <Error /> },
       { path: "/", element: <Home /> },
-      { path: "/login", element: <Login /> },
+      {
+        path: "/login", element: <Login />, 
+        loader: () => {
+          if (localStorage.getItem("authToken")) {
+            return redirect("/");
+          }
+          return null;
+        },
+       },
       {
         path: "/Profile/",
         element: <Profile />,
         children: [
           { path: "chat-room", element: <Chat /> },
           { path: "messages/:roomId/", element: <Messages /> },
+          { path: "General", element: <General /> },
+          { path: "Account", element: <Account /> },
+          { path: "delete", element: <DeleteAccount /> },
+          { path: "reset-password", element: <ResetPassword /> },
         ],
         loader: () => {
           if (!localStorage.getItem("authToken")) {
@@ -52,16 +66,34 @@ const router = createBrowserRouter([
       {
         path: "/signup/patient",
         element: <SignupForm userType="patient" endpoint="/auth/signup" />,
+        loader: () => {
+          if (localStorage.getItem("authToken")) {
+            return redirect("/");
+          }
+          return null;
+        },
       },
       {
         path: "/signup/doctor",
         element: (
           <SignupForm userType="doctor" endpoint="/auth/signup-doctor" />
         ),
+        loader: () => {
+          if (localStorage.getItem("authToken")) {
+            return redirect("/");
+          }
+          return null;
+        },
       },
       {
-        path: "/blog/*",
-        element: <div className="h-screen"> blog </div>,
+        element: <div className="h-screen"> Comming Soon </div>,
+        path: "/ai-chat/*",
+        loader: () => {
+          if (!localStorage.getItem("authToken")) {
+            return redirect("/login");
+          }
+          return null;
+        },
       },
       {
         path: "/groups/*",
@@ -81,10 +113,10 @@ const router = createBrowserRouter([
           return null;
         },
       },
+      { path: "reset-password", element: <ResetPassword /> },
     ],
   },
 ]);
-
 
 const queryClient = new QueryClient();
 ReactDOM.createRoot(document.getElementById("root")!).render(

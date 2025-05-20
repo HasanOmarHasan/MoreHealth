@@ -1,11 +1,12 @@
 #### GET, PUT, PATCH, DELETE,
-PATCH http://127.0.0.1:8000/groups/2/
-Content-Type: application/json
+GET http://127.0.0.1:8000/groups/30/
+Content-Type: multipart/form-data
 Authorization:Token 272ae53c71d2a1de392bbc9b8aca316dd8f3563f
 
 {
     "name": "2 groups update ",
     "description": "this is secend groups "
+    
 }
 
 
@@ -13,14 +14,42 @@ Authorization:Token 272ae53c71d2a1de392bbc9b8aca316dd8f3563f
 #### GET, POST 
 
 POST  http://127.0.0.1:8000/groups/
-Content-Type: application/json
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 Authorization: Token  272ae53c71d2a1de392bbc9b8aca316dd8f3563f
 
 {
-    "name": "2 groups ",
-    "description": "this is secend groups "
-}
+    "name": " groups hello 11 ",
+    "description": "this is secend groups ", 
+    "image" : '',
+    "tags" : "hell"
 
+}
+###
+
+POST http://127.0.0.1:8000/groups/
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+Authorization: Token 272ae53c71d2a1de392bbc9b8aca316dd8f3563f
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="name"
+
+Medical Group 12
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="description"
+
+this is second groups
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="tags"
+
+health,medical,advice
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+###
+
+curl -X POST http://127.0.0.1:8000/groups/ \
+  -H "Authorization: Token 272ae53c71d2a1de392bbc9b8aca316dd8f3563f" \
+  -F "name"=Medical Group11" \
+  -F "description"=Health discussion group" \
+  -F "tags=health,medical,advice"
 
 ### add or removed toggle status# POST
 
@@ -43,15 +72,11 @@ Authorization: Token  272ae53c71d2a1de392bbc9b8aca316dd8f3563f
 }
 ####GET, PUT, PATCH, DELETE
 
-get http://localhost:8000/groups/questions/6/
+get http://localhost:8000/groups/questions/5/
 Content-Type: application/json
 Authorization: Token  272ae53c71d2a1de392bbc9b8aca316dd8f3563f
 
-{
-    "title": "update the title ",
-    "content": "update the fd "
-    
-}
+
 
 
 ###  comment GET, POST
@@ -80,11 +105,17 @@ POST  http://localhost:8000/groups/upvote/comment/10/
 Content-Type: application/json
 Authorization: Token  272ae53c71d2a1de392bbc9b8aca316dd8f3563f
 
+###
+
+patch http://localhost:8000/groups/comments/12/
+Content-Type: application/json
+Authorization: Token  272ae53c71d2a1de392bbc9b8aca316dd8f3563f
+
 ###################################### To filter and search exmples 
 
 ###
 
-GET http://localhost:8000/groups/?ordering=-members_count
+GET http://localhost:8000/groups/?member=hassan
 Content-Type: application/json
 Authorization: Token  272ae53c71d2a1de392bbc9b8aca316dd8f3563f
 ###

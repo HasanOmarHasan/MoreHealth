@@ -1,6 +1,5 @@
-// import React from "react";
-// import { Link } from "react-router";
-import heroImg from "../../assets/img/hero.jpg";
+
+import heroImg from "../../assets/img/hero.png";
 
 import Button from "../Button";
 
@@ -22,8 +21,8 @@ export default function Hero() {
               </p>
 
               <div className="mt-8 flex flex-wrap justify-center gap-4">
-                <Button content="Get Started" key={1} link="/login" />
-                <Button content="Learn More" key={2} type="border" link="#contentSection" />
+                <Button content="Get Started" key={1} link="/ai-chat" />
+                <Button content="Learn More" key={2} type="border" link="/groups" />
               </div>
             </div>
           </div>

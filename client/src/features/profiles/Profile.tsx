@@ -23,34 +23,34 @@ export default function Profile() {
 
   const menuConfig: Record<string, MenuItem[]> = {
     doctor: [
-      { label: "General", path: "/doctor/general" },
-      {
-        label: "Management",
-        path: "#",
-        subItems: [
-          { label: "Team", path: "/doctor/team" },
-          { label: "Patients", path: "/doctor/patients" },
-          { label: "Schedule", path: "/doctor/schedule" },
-        ],
-      },
-      { label: "Clinic", path: "/doctor/appointments" },
-      // { label: "احا", path: "/doctor/billing" },
+      { label: "General", path: "/profile/General" },
+      // {
+      //   label: "Management",
+      //   path: "#",
+      //   subItems: [
+      //     { label: "Team", path: "/doctor/team" },
+      //     { label: "Patients", path: "/doctor/patients" },
+      //     { label: "Schedule", path: "/doctor/schedule" },
+      //   ],
+      // },
+      // { label: "Clinic", path: "/doctor/appointments" },
+      
       chats,
       
     ],
     patient: [
-      { label: "General", path: "/profile" },
-      {
-        label: "My Care",
-        path: "#",
-        subItems: [
-          { label: "Doctors", path: "/profile#" },
-          { label: "Bookings", path: "/profile#" },
-          { label: "Medical History", path: "/profile#" },
-        ],
-      },
+      { label: "General", path: "/profile/General" },
+      // {
+      //   label: "My Care",
+      //   path: "#",
+      //   subItems: [
+      //     { label: "Doctors", path: "/profile#" },
+      //     { label: "Bookings", path: "/profile#" },
+      //     { label: "Medical History", path: "/profile#" },
+      //   ],
+      // },
       chats,
-      { label: "Insurance", path: "/profile#" },
+      // { label: "Insurance", path: "/profile#" },
     ],
   };
 
@@ -122,24 +122,32 @@ export default function Profile() {
           <ul className="mt-2 space-y-1 px-4">
             <li>
               <Link
-                to="#"
+                to="/profile/Account"
                 className="block rounded-lg px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700"
               >
-                Details
+                Change Profile Details
               </Link>
             </li>
             <li>
               <Link
-                to="#"
+                to="/profile/reset-password"
                 className="block rounded-lg px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700"
               >
-                Security
+                Change password
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/profile/delete"
+                className="block rounded-lg px-4 py-2 text-sm font-medium text-gray-500 hover:bg-red-100 hover:text-gray-700"
+              >
+                Delete Account
               </Link>
             </li>
             <li>
               <button
                 onClick={handleLogout}
-                className="w-full rounded-lg px-4 py-2 text-left text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                className="w-full rounded-lg px-4 py-2 text-left text-sm font-medium text-red-400 hover:bg-red-100 hover:text-red-600"
               >
                 Logout
               </button>
@@ -151,8 +159,8 @@ export default function Profile() {
   );
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[200px_1fr] lg:gap-8">
-      <div className="flex h-screen flex-col justify-between border-e bg-white">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[240px_1fr] lg:gap-8">
+      <div className="flex h-full flex-col justify-between border-e bg-white ">
         <div className="px-4 py-6">{renderMenuItems(menuConfig[userType])}</div>
 
         <div className="sticky inset-x-0 bottom-0 border-t border-gray-100">

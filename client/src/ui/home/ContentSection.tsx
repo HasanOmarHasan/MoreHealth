@@ -1,3 +1,5 @@
+
+
 // ContentSection.tsx
 import { motion } from "framer-motion";
 import ContentItem from "./ContentItem";
@@ -16,20 +18,21 @@ export default function ContentSection() {
     >
       <ContentItem
         videoSrc={digtalHealth}
-        title="Virtual Medical Consultations Made Simple"
-        disc="Connect instantly with licensed healthcare professionals through our secure video platform. Get personalized advice from the comfort of your home."
+        title="The AI Health Assistant"
+        disc="An intelligent assistant available 24/7 to answer health-related questions, provide guidance, and offer quick support based on your symptoms."
       />
       <ContentItem
         videoSrc={stor}
-        title="Digital Pharmacy at Your Fingertips"
-        disc="Order prescription refills and healthcare essentials with our integrated pharmacy service. Automatic insurance processing and door-to-door delivery."
+        title="Patient Communities"
+        disc="Join secure, moderated group chats where you can share experiences and advice with peers, building emotional support networks that reduce isolation."
         reverseLayout
       />
       <ContentItem
         videoSrc={medicalConcept}
-        title="AI-Powered Health Insights"
-        disc="Upload your medical reports for instant AI analysis combined with expert physician review. Secure, confidential, and clinically validated."
+        title="Smart Medication Reminders"
+        disc="Never miss a dose with our customizable notification system designed for chronic disease management and enhanced treatment adherence."
       />
     </motion.section>
   );
 }
+

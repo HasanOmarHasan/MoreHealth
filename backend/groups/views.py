@@ -1,10 +1,12 @@
 from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
 from django.shortcuts import get_object_or_404
 from .models import Group, Question, Comment
 from .serializers import GroupSerializer, QuestionSerializer, CommentSerializer , GroupFilter
 from .permissions import IsGroupOwner, IsContentOwner # عشان اضيف المسح و التعديل 
+import datetime 
 
 from django_filters import rest_framework as filters
 from rest_framework.filters import SearchFilter, OrderingFilter 
@@ -15,6 +17,7 @@ from django.db.models import Count
 class GroupListCreateView(generics.ListCreateAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
+    parser_classes = (MultiPartParser, FormParser)
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     
     filter_backends = [filters.DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -35,6 +38,7 @@ class GroupListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         group = serializer.save(creator=self.request.user)
         group.members.add(self.request.user)
+        
 
 class GroupDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Group.objects.all()
@@ -95,48 +99,49 @@ class QuestionDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsContentOwner]
-
-class CommentListCreateView(generics.ListCreateAPIView):
-# class CommentListCreateView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Comment.objects.all() # 
+# Add this view for comment detail operations
+class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    # permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsContentOwner]
-    
+
+    def perform_update(self, serializer):
+        # Automatically update the timestamp on edit
+        
+        serializer.save(updated_at=datetime.datetime.now()) 
+
+# Modified CommentListCreateView
+class CommentListCreateView(generics.ListCreateAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]  # Remove IsContentOwner from here
 
     def get_queryset(self):
-        return Comment.objects.filter(question_id=self.kwargs['question_pk'], parent__isnull=True)
+        return Comment.objects.filter(
+            question_id=self.kwargs['question_pk'],
+            parent__isnull=True
+        ).select_related('user').prefetch_related('replies')
 
     def perform_create(self, serializer):
         question = get_object_or_404(Question, pk=self.kwargs['question_pk'])
         serializer.save(user=self.request.user, question=question)
 
-# class ReplyCreateView(generics.CreateAPIView):
-# class ReplyCreateView(generics.CreateAPIView):
-#     serializer_class = CommentSerializer
-#     # permission_classes = [permissions.IsAuthenticated]
-#     permission_classes = [permissions.IsAuthenticated, IsContentOwner]
-
-#     def perform_create(self, serializer):
-#         parent = get_object_or_404(Comment, pk=self.kwargs['parent_pk'])
-#         serializer.save(user=self.request.user, question=parent.question, parent=parent)
+# Updated ReplyListView
 class ReplyListView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        """For GET requests - list all replies to parent comment"""
         parent = get_object_or_404(Comment, pk=self.kwargs['parent_pk'])
         return Comment.objects.filter(parent=parent).order_by('-created_at')
 
     def perform_create(self, serializer):
-        """For POST requests - create new reply"""
         parent = get_object_or_404(Comment, pk=self.kwargs['parent_pk'])
         serializer.save(
             user=self.request.user,
             parent=parent,
-            question=parent.question  # Maintain question relationship
+            question=parent.question
         )
+
 class UpvoteView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 

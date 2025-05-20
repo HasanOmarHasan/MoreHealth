@@ -12,9 +12,11 @@
   "dependencies": {
     "@tailwindcss/forms": "^0.5.10",
     "@tanstack/react-query": "^5.66.11",
+    "@types/react-datepicker": "^6.2.0",
     "axios": "^1.8.1",
     "motion": "^12.4.3",
     "react": "^19.0.0",
+    "react-datepicker": "^8.3.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.2.0",
     "react-time-ago": "^7.3.3",

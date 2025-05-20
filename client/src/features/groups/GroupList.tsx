@@ -1,20 +1,19 @@
-// src/features/groups/GroupList.tsx
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axiosClient from "../../utils/axiosClient";
+import axiosClient from "../../services/axiosClient";
 import { useAuth } from "../../context/Auth";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
-
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Loader from "../../ui/Loader";
 
 import ReactTimeAgo from "react-time-ago";
 
-import  '../../utils/timeAgoConfig';
+import "../../utils/timeAgoConfig";
 
-
-import imgLandscape from "../../assets/img/img-landscape.svg";
+// import imgLandscape from "../../assets/img/img-landscape.svg";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 interface Group {
   id: number;
@@ -32,22 +31,62 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-  // const [selectedImage, setSelectedImage] = useState<File | null>(null);
+
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
+  const summaryRef = useRef<HTMLElement>(null);
+  const [filters, setFilters] = useState({
+    search: "",
+    createdAfter: null as Date | null,
+    createdBefore: null as Date | null,
+    minMembers: "",
+    creator: "",
+    member: "",
+    myGroups: false,
+    name: "",
+    nameContains: "",
+    ordering: "-members_count",
+  });
 
   const { data: groups, isLoading } = useQuery({
-    queryKey: ["groups", debouncedSearchTerm],
+    queryKey: ["groups", filters],
     // queryFn: () => axiosClient.get("/groups/").then((res) => res.data),
-    queryFn: () =>
-      axiosClient
-        .get("/groups/", {
-          params: {
-            search: debouncedSearchTerm,
-          },
-        })
-        .then((res) => res.data),
+
+    queryFn: () => {
+      const params = new URLSearchParams();
+
+      // Build query parameters
+      if (filters.search) params.append("search", filters.search);
+      if (filters.createdAfter)
+        params.append(
+          "created_after",
+          filters.createdAfter.toISOString().split("T")[0]
+        );
+      if (filters.createdBefore)
+        params.append(
+          "created_before",
+          filters.createdBefore.toISOString().split("T")[0]
+        );
+      if (filters.minMembers) params.append("min_members", filters.minMembers); // done
+      if (filters.creator) params.append("creator", filters.creator); //
+      if (filters.member) params.append("member", filters.member); //
+      if (filters.name) params.append("name", filters.name); //
+      if (filters.myGroups) params.append("my_groups", "true");
+      if (filters.nameContains)
+        params.append("name__icontains", filters.nameContains);
+      if (filters.ordering) params.append("ordering", filters.ordering);
+
+      return axiosClient.get("/groups/", { params }).then((res) => res.data);
+    },
+    keepPreviousData: true,
   });
+  const handleFilterChange = (field: keyof typeof filters, value: any) => {
+    setFilters((prev) => ({ ...prev, [field]: value }));
+  };
 
   // Example of updated useMutation syntax
   const joinMutation = useMutation({
@@ -81,9 +120,10 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
       id: number;
       name: string;
       description: string;
+      image: string;
       // tags: string[];
     }) =>
-      // mutationFn: ({ id, formData }: { id: number; formData: FormData }) =>
+     
       axiosClient.patch(`/groups/${updatedData.id}/`, {
         name: updatedData.name,
         description: updatedData.description,
@@ -119,6 +159,7 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
     const groupData = {
       name: formData.get("name") as string,
       description: formData.get("description") as string,
+      image: formData.get("image") as string,
       // tags: formData.get("tags") as string[] ,
     };
 
@@ -127,6 +168,7 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
         id: selectedGroup.id,
         name: groupData.name,
         description: groupData.description,
+        image: groupData.image,
         // tags : groupData.tags
       });
     } else {
@@ -135,24 +177,17 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
   };
 
   ////////////////////////////////
-  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (e.target.files?.[0]) {
-  //     const file = e.target.files[0];
-  //     if (!file.type.startsWith("image/")) {
-  //       toast.error("Please upload an image file");
-  //       return;
-  //     }
-  //     setSelectedImage(file);
-  //   }
-  // };
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      const file = e.target.files[0];
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please upload an image file");
+        return;
+      }
+      setSelectedImage(file);
+    }
+  };
 
-  // const getImageUrl = (image: unknown) => {
-  //   if (typeof image === "string") return image;
-  //   if (image instanceof File) return URL.createObjectURL(image);
-  //   return "https://fotospark.net/wp-content/plugins/photonic/include/images/placeholder-Sm.png";
-  // };
-
-  ///////////////////
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
@@ -162,7 +197,23 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
   }, [searchTerm]);
 
   console.log(groups);
-  console.log(user);
+  // console.log(user);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        filterRef.current &&
+        !filterRef.current.contains(event.target as Node) &&
+        summaryRef.current &&
+        !summaryRef.current.contains(event.target as Node)
+      ) {
+        setIsFilterOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <>
@@ -172,13 +223,22 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
         </div>
       ) : (
         <>
-          <div className="flex flex-col md:flex-row justify-between items-center py-8 gap-8">
-            <div className="flex gap-8  ">
-              <div className="relative">
-                <details className="group [&_summary::-webkit-details-marker]:hidden">
-                  <summary className="flex cursor-pointer items-center gap-2 border-b border-gray-400 pb-1 text-gray-900 transition hover:border-gray-600">
-                    <span className="text-sm font-medium"> Filter </span>
-
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-8">
+            <div className="flex gap-8">
+              <div className="relative" ref={filterRef}>
+                <details
+                  className="group [&_summary::-webkit-details-marker]:hidden "
+                  open={isFilterOpen}
+                >
+                  <summary
+                    className="flex cursor-pointer items-center gap-2 border-b border-gray-400 pb-1 text-gray-900 transition hover:border-gray-600"
+                    ref={summaryRef}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsFilterOpen(!isFilterOpen);
+                    }}
+                  >
+                    <span className="text-sm font-medium">Filter & Sort</span>
                     <span className="transition group-open:-rotate-180">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -201,68 +261,107 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
                     <div className="w-96 rounded-sm border border-gray-200 bg-white">
                       <header className="flex items-center justify-between p-4">
                         <span className="text-sm text-gray-700">
-                          {" "}
-                          0 Selected{" "}
+                          {`${[
+                            filters.createdAfter ? 1 : 0,
+                            filters.createdBefore ? 1 : 0,
+                            filters.myGroups ? 1 : 0,
+                            filters.nameContains ? 1 : 0,
+                            filters.minMembers ? 1 : 0,
+                            filters.ordering !== "-members_count" ? 1 : 0,
+                          ].reduce((a, b) => a + b)} Selected`}
                         </span>
-
                         <button
                           type="button"
                           className="text-sm text-gray-900 underline underline-offset-4"
+                          onClick={() =>
+                            setFilters((prev) => ({
+                              ...prev,
+                              createdAfter: null,
+                              createdBefore: null,
+                              myGroups: false,
+                              nameContains: "",
+                              minMembers: "",
+                              ordering: "-members_count",
+                            }))
+                          }
                         >
                           Reset
                         </button>
                       </header>
 
-                      {/* <ul className="space-y-1 border-t border-gray-200 p-4">
-
-
-                        <li>
-                          <label
-                            htmlFor="FilterOutOfStock"
-                            className="inline-flex items-center gap-2"
-                          >
-                            <input
-                              type="checkbox"
-                              id="FilterOutOfStock"
-                              className="size-5 rounded-sm border-gray-300"
-                            />
-
-                            <span className="text-sm font-medium text-gray-700">
-                              {" "}
-                              Out of Stock (10+){" "}
-                            </span>
+                      <div className="border-t border-gray-200 p-4 space-y-4">
+                        {/* Date Range */}
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Date Range
                           </label>
-                        </li>
-                      </ul> */}
-                      <div className="border-t border-gray-200 p-4">
-                        <div className="flex justify-between gap-4">
-                          members
-                          <label
-                            htmlFor="FilterPriceFrom"
-                            className="flex items-center gap-2"
-                          >
-                            <span className="text-sm text-gray-600"></span>
-
-                            <input
-                              type="number"
-                              id="FilterPriceFrom"
-                              placeholder="From"
-                              className="w-full rounded-md border-gray-200 shadow-xs sm:text-sm"
+                          <div className="grid grid-cols-2 gap-2">
+                            <DatePicker
+                              selected={filters.createdAfter}
+                              onChange={(date) =>
+                                handleFilterChange("createdAfter", date)
+                              }
+                              placeholderText="Start date"
+                              className="w-full p-2 border rounded-md text-sm"
                             />
-                          </label>
-                          <label
-                            htmlFor="FilterPriceTo"
-                            className="flex items-center gap-2"
-                          >
-                            <span className="text-sm text-gray-600"></span>
-
-                            <input
-                              type="number"
-                              id="FilterPriceTo"
-                              placeholder="To"
-                              className="w-full rounded-md border-gray-200 shadow-xs sm:text-sm"
+                            <DatePicker
+                              selected={filters.createdBefore}
+                              onChange={(date) =>
+                                handleFilterChange("createdBefore", date)
+                              }
+                              placeholderText="End date"
+                              className="w-full p-2 border rounded-md text-sm"
                             />
+                          </div>
+                        </div>
+
+                        {/* Name Contains */}
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Group Name Contains
                           </label>
+                          <input
+                            type="text"
+                            value={filters.nameContains}
+                            onChange={(e) =>
+                              handleFilterChange("nameContains", e.target.value)
+                            }
+                            className="w-full p-2 border rounded-md text-sm"
+                            placeholder="Search group names..."
+                          />
+                        </div>
+
+                        {/* My Groups */}
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={filters.myGroups}
+                            onChange={(e) =>
+                              handleFilterChange("myGroups", e.target.checked)
+                            }
+                            className="h-4 w-4"
+                          />
+                          <label className="text-sm">Show Only My Groups</label>
+                        </div>
+
+                        {/* Sorting */}
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Sort By
+                          </label>
+                          <select
+                            value={filters.ordering}
+                            onChange={(e) =>
+                              handleFilterChange("ordering", e.target.value)
+                            }
+                            className="w-full p-2 border rounded-md text-sm"
+                          >
+                            <option value="-members_count">Most Members</option>
+                            <option value="-created_at">Newest First</option>
+                            <option value="created_at">Oldest First</option>
+                            <option value="name">Name (A-Z)</option>
+                            <option value="-name">Name (Z-A)</option>
+                          </select>
                         </div>
                       </div>
                     </div>
@@ -270,27 +369,46 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
                 </details>
               </div>
             </div>
-            <div className=" md:w-auto">
+
+            {/* Search Input */}
+            <div>
               <input
                 type="search"
-                placeholder="Search ..."
-                className=" px-4 py-2 rounded-lg border"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={filters.search}
+                onChange={(e) => handleFilterChange("search", e.target.value)}
+                className="w-full p-2 border rounded-md"
+                placeholder="Search 🔎... Creator usernames,Group names,Desc, etc."
               />
             </div>
+
+            {/* create new  */}
             <button
               onClick={() => {
                 setSelectedGroup(null);
                 setIsModalOpen(true);
               }}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+              className="sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors flex items-center gap-2  m-auto"
             >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-5 h-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
               Create New Group
             </button>
           </div>
 
-          {!isLoading && groups.length === 0 && (
+          {!isLoading && groups?.length === 0 && (
             <div className="col-span-full py-12 text-center h-screen">
               <div className="max-w-md mx-auto">
                 <svg
@@ -346,134 +464,154 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
 
           {!isLoading && groups.length > 0 && (
             <>
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8 md:grid-cols-2 ">
-                {groups?.map((group) => (
-                  <div className="" key={group.id}>
-                    <article className="overflow-hidden rounded-lg shadow-sm transition hover:shadow-lg">
-                      <img
+              <div
+                className={`space-y-6   ${groups?.length <= 4 && "h-screen"}`}
+              >
+                <div
+                  className={` gap-4  grid  grid-cols-1 lg:grid-cols-3 lg:gap-8 md:grid-cols-2`}
+                >
+                  {groups?.map((group) => (
+                    <div key={group.id}>
+                      <article className="overflow-hidden rounded-lg shadow-sm transition hover:shadow-lg">
+                        {/* <img
                         alt={group.name}
-                        // src={
-                        //   group.image ||
-                        //   {imgLandscape}
-                        // }
-                        src={imgLandscape}
+                        src={
+                          group.image ||
+                          imgLandscape
+                        }
+                        // src={`${group.image === null ? imgLandscape : group.image}`}
                         // src={getImageUrl(group.image)}
 
                         className="h-56 w-full "
-                      />
-                      <div className="bg-white p-4 sm:p-6">
-                        <Link to={`/groups/${group.id}`}>
-                          <div className="flex justify-between items-center text-sm">
-                            <span className="text-gray-500">
-                              {/* {new Date(group.created_at).toLocaleDateString("ar-EG")} */}
-                              <ReactTimeAgo
-                                date={group.created_at}
-                                locale="en-US"
-                              />
-                            </span>
-                            <span className="text-gray-500">
-                              {group.members.length} members
-                            </span>
-                          </div>
-
-                          <h3
-                            className="mt-0.5 text-lg text-gray-900"
-                            onClick={() => onSelect(group.id)}
-                          >
-                            {group.name}
-                          </h3>
-
-                          <p className="mt-2 line-clamp-3 text-sm/relaxed text-gray-500">
-                            {group.description}
-                          </p>
-                        </Link>
-
-                        {group.tags.length > 0 && (
-                          <div className="flex gap-2">
-                            {group.tags.map((tag) => (
-                              <span
-                                key={tag}
-                                className="bg-gray-100 px-2 py-1 rounded text-sm"
-                              >
-                                {tag}
+                      /> */}
+                        <div className="bg-white p-4 sm:p-6">
+                          <Link to={`/groups/${group.id}`}>
+                            <div className="flex justify-between items-center text-sm">
+                              <span className="text-gray-500">
+                                <ReactTimeAgo
+                                  date={group.created_at}
+                                  locale="en-US"
+                                />
                               </span>
-                            ))}
-                          </div>
-                        )}
+                              <span className="text-gray-500">
+                                {group.members.length} members
+                              </span>
+                            </div>
 
-                        <div className="mt-2 flex justify-between items-center">
-                          <button
-                            onClick={() => joinMutation.mutate(group.id)}
-                            className={`px-4 py-2 rounded-lg ${
-                              group.members.some((m) => m.id === user?.id)
-                                ? "bg-gray-200 text-gray-700"
-                                : "bg-blue-100 text-blue-700"
-                            }`}
-                          >
-                            {group.members.some((m) => m.id === user?.id)
-                              ? "Joined"
-                              : "Join"}
-                          </button>
-
-                          {user?.id === group.creator.id && (
-                            <div className="flex gap-2">
-                              {/* delet and update btn  */}
-                              <button
-                                onClick={() => {
-                                  setSelectedGroup(group);
-                                  setIsModalOpen(true);
-                                }}
-                                className="p-2 hover:bg-gray-100 rounded-full text-gray-600 hover:text-blue-600 transition-colors"
-                                title="Edit"
-                              >
-                                <svg
-                                  className="w-5 h-5"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                                  />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={() => {
-                                  if (
-                                    window.confirm(
-                                      "Are you sure you want to delete this question?"
-                                    )
-                                  ) {
-                                    deleteMutation.mutate(group.id);
+                            <h3
+                              className="mt-0.5 text-lg text-gray-900"
+                              onClick={() => onSelect(group.id)}
+                            >
+                              {group.name}
+                              {new Date(group?.updated_at).getTime() >
+                                new Date(group?.created_at).getTime() && (
+                                <span className="text-xs text-gray-500 ml-2 italic">
+                                  (edited at{" "}
+                                  {
+                                    <ReactTimeAgo
+                                      date={group.updated_at}
+                                      locale="en-US"
+                                    />
                                   }
-                                }}
-                                className="p-2 hover:bg-gray-100 rounded-full text-gray-600 hover:text-red-600 transition-colors"
-                                title="Archive"
-                              >
-                                <svg
-                                  className="w-5 h-5"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
+                                  )
+                                </span>
+                              )}
+                            </h3>
+
+                            <p className="mt-2 line-clamp-3 text-sm/relaxed text-gray-500">
+                              {group.description}
+                            </p>
+                          </Link>
+
+                          {group.tags.length > 0 && (
+                            <div className="flex gap-2">
+                              {group.tags.map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="bg-gray-100 px-2 py-1 rounded text-sm"
                                 >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                  />
-                                </svg>
-                              </button>
+                                  {tag}
+                                </span>
+                              ))}
                             </div>
                           )}
+
+                          <div className="mt-2 flex justify-between items-center">
+                            <div className="">
+                              <button
+                                onClick={() => joinMutation.mutate(group.id)}
+                                className={`px-4 py-2 rounded-lg ${
+                                  group.members.some((m) => m.id === user?.id)
+                                    ? "bg-gray-200 text-gray-700"
+                                    : "bg-blue-100 text-blue-700"
+                                }`}
+                              >
+                                {group.members.some((m) => m.id === user?.id)
+                                  ? "Joined"
+                                  : "Join"}
+                              </button>
+                            </div>
+
+                            {user?.id === group.creator.id && (
+                              <div className="flex gap-2">
+                                {/* delet and update btn  */}
+                                <button
+                                  onClick={() => {
+                                    setSelectedGroup(group);
+                                    setIsModalOpen(true);
+                                  }}
+                                  className="p-2 hover:bg-gray-100 rounded-full text-gray-600 hover:text-blue-600 transition-colors"
+                                  title="Edit"
+                                >
+                                  <svg
+                                    className="w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                    />
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    if (
+                                      window.confirm(
+                                        "Are you sure you want to delete this question?"
+                                      )
+                                    ) {
+                                      deleteMutation.mutate(group.id);
+                                    }
+                                  }}
+                                  className="p-2 hover:bg-gray-100 rounded-full text-gray-600 hover:text-red-600 transition-colors"
+                                  title="Archive"
+                                >
+                                  <svg
+                                    className="w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                    />
+                                  </svg>
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </article>
-                  </div>
-                ))}
+                      </article>
+                    </div>
+                  ))}
+                </div>
               </div>
             </>
           )}
@@ -520,28 +658,7 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
                     required
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    tags Name
-                  </label>
-                  <input
-                    name="tags"
-                    defaultValue={selectedGroup?.tags || ""}
-                    className="w-full px-4 py-2 border rounded-lg"
-                  />
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Group Image
-                    </label>
-                    <input
-                      name="image"
-                      type="file"
-                      accept="image/*"
-                      // onChange={handleImageChange}
-                      className="w-full px-4 py-2 border rounded-lg"
-                    />
-                  </div>
-                </div>
+                
                 <div className="flex justify-end gap-4">
                   <button
                     type="button"

@@ -1,9 +1,9 @@
 // Login.tsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axiosClient from "../../utils/axiosClient";
+import axiosClient from "../../services/axiosClient";
 import Button from "../../ui/Button";
-import InputItem from "./InputItem";
+import InputItem from "../../ui/InputItem";
 import { toast } from "react-toastify";
 import { useAuth } from "../../context/Auth";
 
@@ -47,13 +47,18 @@ const Login = () => {
     try {
       const response = await axiosClient.post("/auth/login", formData);
 
-      localStorage.setItem("authToken", response.data.token);
+      localStorage.setItem("authToken", response.data.access);
       localStorage.setItem("user", JSON.stringify(response.data.user));
+      // setTkn(response.data.Token)
       initializeAuth();
+      
+      
+      // console.log(response.data.Token)
+      // console.log(response.data)
 
       toast.success("Login successful!");
       navigate("/");
-    } catch (error: any) {
+    } catch (error: any | null) {
       toast.error(error.response?.data?.error || "Login failed");
     } finally {
       setIsSubmitting(false);
@@ -68,8 +73,7 @@ const Login = () => {
         </h2>
 
         <p className="mx-auto mt-4 max-w-md text-center text-gray-500">
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Obcaecati
-          sunt dolores deleniti inventore quaerat mollitia?
+          
         </p>
         {/* ... existing layout ... */}
 
@@ -118,12 +122,21 @@ const Login = () => {
             isLoading={isSubmitting}
             content="Log in"
           ></Button>
-          <p className="text-center text-sm text-gray-500">
+          <div className="flex justify-between">
+
+          <p className=" text-sm text-gray-500">
             No account?
             <Link className="underline" to="/signup/patient">
               Sign up
             </Link>
           </p>
+          <p className=" text-sm text-gray-500">
+            Forget password?
+            <Link className="underline" to="/reset-password">
+              Reset password
+            </Link>
+        </p>
+          </div>
         </form>
       </div>
     </div>

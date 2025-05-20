@@ -1,5 +1,7 @@
 from django.urls import path
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.GroupListCreateView.as_view(), name='group-list'),
@@ -12,9 +14,14 @@ urlpatterns = [
    
     path('questions/<int:question_pk>/comments/', views.CommentListCreateView.as_view(), name='comment-list'),
     
-    # 
-    # path('comments/<int:parent_pk>/replies/', views.ReplyCreateView.as_view(), name='reply-create'),
+
     path('comments/<int:parent_pk>/replies/', views.ReplyListView.as_view(), name='reply-create'),
+    # Comment detail routes (edit/delete)
+    path('comments/<int:pk>/', views.CommentDetailView.as_view(), name='comment-detail'),
+    
+    # Reply list/create
+    path('comments/<int:parent_pk>/replies/', views.ReplyListView.as_view(), name='reply-list-create'),
+
     
     path('upvote/<str:model_type>/<int:pk>/', views.UpvoteView.as_view(), name='toggle-upvote'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

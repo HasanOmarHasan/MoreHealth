@@ -2,9 +2,9 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Button from "../../ui/Button";
-import InputItem from "./InputItem";
+import InputItem from "../../ui/InputItem";
 import { toast } from "react-toastify";
-import axiosClient from "../../utils/axiosClient";
+import axiosClient from "../../services/axiosClient";
 
 interface SignupProps {
   userType: "patient" | "doctor";
@@ -24,8 +24,8 @@ const Signup = ({ userType, endpoint }: SignupProps) => {
     gender: "male",
     medical_insurance: false,
     // ...(userType === "doctor" && {
-      specialization: "",
-      practice_permit: "",
+    specialization: "",
+    practice_permit: "",
     // }),
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -118,17 +118,17 @@ const Signup = ({ userType, endpoint }: SignupProps) => {
                 region: formData.region,
                 age: Number(formData.age), // Convert to number
                 gender: formData.gender,
-                medical_insurance: formData.medical_insurance,
+                // medical_insurance: formData.medical_insurance,
               },
               specialization: formData.specialization,
               practice_permit: formData.practice_permit,
             }
-          : {...formData};
+          : { ...formData };
       const response = await axiosClient.post(endpoint, payload);
 
       console.log(formData);
 
-        console.log(response)
+      console.log(response);
       if (response.status >= 200 && response.status < 300) {
         toast.success("Signup successful! Please login.");
 
@@ -168,7 +168,6 @@ const Signup = ({ userType, endpoint }: SignupProps) => {
               onSubmit={handleSubmit}
               className="mt-8 grid grid-cols-6 gap-6"
             >
-              
               <InputItem
                 name="username"
                 placeholder="User Name"
@@ -244,7 +243,6 @@ const Signup = ({ userType, endpoint }: SignupProps) => {
                     name="specialization"
                     placeholder="specialization"
                     type="text"
-                    
                     onBlur={handleBlur}
                     onChange={handleChange}
                     required={true}
@@ -253,7 +251,6 @@ const Signup = ({ userType, endpoint }: SignupProps) => {
                     name="practice_permit"
                     placeholder="Practice Permit Number"
                     type="text"
-                    
                     onBlur={handleBlur}
                     onChange={handleChange}
                     required={true}

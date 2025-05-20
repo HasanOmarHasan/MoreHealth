@@ -7,14 +7,19 @@ from taggit.managers import TaggableManager
 
 User = get_user_model()
 
+def upload_to(instance, filename):
+    return 'groups/images/{filename}'.format(filename=filename)
+
+
 class Group(models.Model):
     name = models.CharField("اسم المجموعة", max_length=100, unique=True)
     description = models.TextField("الوصف")
-    image = models.ImageField("صورة المجموعة", upload_to='groups/', blank=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_groups')
     members = models.ManyToManyField(User, related_name='joined_groups')
+    tags = TaggableManager("tags", blank=True)
     created_at = models.DateTimeField("تاريخ الإنشاء", auto_now_add=True)
-    tags = TaggableManager("الوسوم", blank=True)
+    updated_at = models.DateTimeField(auto_now=True, db_index=True)
+    image = models.ImageField("صورة المجموعة", upload_to=upload_to, blank=True)
 
     def get_absolute_url(self):
         return reverse('groups:detail', kwargs={'pk': self.pk})
@@ -28,6 +33,7 @@ class Question(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='questions')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='questions')
     created_at = models.DateTimeField("تاريخ النشر", auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True, db_index=True)    
     upvotes = models.ManyToManyField(User, related_name='upvoted_questions', blank=True)
 
     class Meta:
@@ -42,6 +48,7 @@ class Comment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')  # لدعم الردود
     created_at = models.DateTimeField("تاريخ التعليق", auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True, db_index=True)
     upvotes = models.ManyToManyField(User, related_name='upvoted_comments', blank=True)
 
     def total_upvotes(self):

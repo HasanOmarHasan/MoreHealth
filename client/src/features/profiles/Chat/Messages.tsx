@@ -1,6 +1,6 @@
 // src/features/chat/Messages.tsx
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axiosClient from "../../../utils/axiosClient";
+import axiosClient from "../../../services/axiosClient";
 import { useAuth } from "../../../context/Auth";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -9,7 +9,7 @@ import ReactTimeAgo from "react-time-ago";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 
-import '../../../utils/timeAgoConfig';
+import "../../../utils/timeAgoConfig";
 
 interface Message {
   id: number;
@@ -101,7 +101,8 @@ const Messages = () => {
     <div className="flex flex-col h-screen bg-gray-100">
       {/* Chat Header */}
       <div className="bg-white p-4 border-b flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Chat Room #{roomId}</h2>
+        <h2 className="text-xl font-semibold">Chat Room </h2>
+        {/* <h2 className="text-xl font-semibold">Chat Room #{roomId}</h2> */}
         <button
           onClick={() => navigate(-1)}
           className="text-gray-600 hover:text-gray-800"
@@ -165,22 +166,15 @@ const Messages = () => {
 
       {/* Message Input */}
       <form onSubmit={handleSubmit} className="bg-white p-4 border-t">
+        
         <div className="flex gap-2">
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type a message..."
-            className="flex-1 px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-            disabled={sendMessageMutation.isLoading}
-          />
-          <button
+        <button
             type="submit"
             disabled={!newMessage.trim() || sendMessageMutation.isLoading}
             className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <svg
-              className="w-5 h-5"
+              className="w-5 h-5 rotate-90"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -193,6 +187,15 @@ const Messages = () => {
               />
             </svg>
           </button>
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type a message..."
+            className="flex-1 px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={sendMessageMutation.isLoading}
+          />
+          
         </div>
       </form>
     </div>

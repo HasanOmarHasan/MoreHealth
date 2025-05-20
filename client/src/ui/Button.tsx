@@ -1,4 +1,4 @@
-import React from "react";
+
 import { Link } from "react-router";
 import Loader from "./Loader";
 
@@ -7,14 +7,23 @@ type pop = {
   width?: string;
   type?: "border";
   link?: string;
-  btnType?: 'submit'; 
+  btnType?: "submit";
   disabled?: boolean;
   isLoading?: boolean;
-  
-
+  onClick?: () => void;
 };
 
-export default function Button({ content, width, type, link = "#", btnType, disabled = false, isLoading = false }: pop) {
+export default function Button({
+  content,
+  width,
+  type,
+  link = "#",
+  btnType,
+  disabled = false,
+  isLoading = false, onClick,
+  
+  
+}: pop) {
   const base = `inline-block focus:ring-2 focus:outline-hidden border border-blue-600 px-12 py-3 text-sm font-medium transition rounded-md ${
     disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer "
   }`;
@@ -24,17 +33,25 @@ export default function Button({ content, width, type, link = "#", btnType, disa
 
   return (
     <>
-      <button className={`${type ? border : solid} ${width}`} type={btnType} disabled={disabled} >
+      <button
+        className={`${type ? border : solid} ${width}`}
+        type={btnType}
+        disabled={disabled}
+        onClick={onClick}
+      >
         {link !== "#" ? (
           <>
             <Link to={link}>{content}</Link>
           </>
         ) : (
-            <> {isLoading && <Loader size="btn" color="text-blue" />}  {content}</>
-            
+          <>
+            {" "}
+              {/* {isLoading && <Loader size="btn" color="text-blue" />} {content} */}
+              {isLoading ? <Loader size="btn" color="text-blue" /> :content}
+              
+          </>
         )}
       </button>
     </>
   );
 }
-  

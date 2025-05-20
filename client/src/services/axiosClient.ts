@@ -1,0 +1,36 @@
+
+import axios from 'axios';
+
+const axiosClient = axios.create({
+  baseURL: 'http://127.0.0.1:8000',
+  // headers: { 'Content-Type': 'application/json' }
+  headers: { 'Content-Type': 'multipart/form-data' }
+    ,
+});
+
+axiosClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('authToken');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+axiosClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('authToken');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+
+  
+);
+
+export const addFriend = (userId: number) => axiosClient.post(`/chat/friends/${userId}/`);
+export const startChat = (userId: number) => axiosClient.post(`/chat/start-chat/${userId}/`);
+
+
+
+export default axiosClient;
+

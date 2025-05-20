@@ -1,3 +1,4 @@
+
 // testmoies.tsx
 import React, { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -10,22 +11,22 @@ interface Testimonial {
   text: string;
 }
 
-// Array of testimonial data
+// Array of testimonial data updated with realistic Egyptian names and genuine positive feedback
 const testimonials: Testimonial[] = [
   {
     id: 1,
-    name: "Paul Starr 1",
-    text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Culpa sit rerum incidunt, a consequuntur recusandae ab saepe illo est quia obcaecati neque.",
+    name: "Mohamed El-Sayed",
+    text: "My online consultation was smooth and reassuring. The advice I received helped me better understand my health, and I truly appreciate the personal touch.",
   },
   {
     id: 2,
-    name: "Paul Starr 2",
-    text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Culpa sit rerum incidunt, a consequuntur recusandae ab saepe illo est quia obcaecati neque.",
+    name: "Fatima Hassan",
+    text: "HealGen has transformed how I manage my health. The AI assistant provided clear guidance and the community support added an extra layer of comfort.",
   },
   {
     id: 3,
-    name: "Paul Starr 3",
-    text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Culpa sit rerum incidunt, a consequuntur recusandae ab saepe illo est quia obcaecati neque.",
+    name: "Ahmed Khalid",
+    text: "I was impressed by the prompt service and the intuitive design of the platform. The consultation was thorough and I even got my prescription delivered quickly.",
   },
 ];
 
@@ -49,11 +50,9 @@ const TestimonialCard: React.FC<{ testimonial: Testimonial }> = ({
             className="w-14 h-14 rounded-full object-cover"
           />
           <div>
-            <div className="flex justify-center gap-0.5 text-green-500">
-              {/* You can add star icons here if needed */}
-            </div>
-            <p className="mt-0.5 text-lg font-medium text-gray-900">
+            <p className="mt-0.5 text-lg font-medium text-gray-900 flex items-center">
               {testimonial.name}
+              <span className="text-yellow-400 ml-2">★★★★★</span>
             </p>
           </div>
         </div>
@@ -104,7 +103,7 @@ export default function Testimonials() {
 
   return (
     <section id="testSection" className="bg-white py-12 lg:py-16">
-      <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 ">
+      <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
         <h2 className="text-center text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
           Read trusted reviews from our customers
         </h2>
