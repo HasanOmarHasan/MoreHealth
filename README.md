@@ -159,7 +159,7 @@ MoreHealth is an AI-driven health assistant platform where users interact with a
 
 
 ---
-
+# screen and video 
 
 ![home Page](screenshots/homepage.png)
 ### Commenity
@@ -178,5 +178,14 @@ MoreHealth is an AI-driven health assistant platform where users interact with a
 ![ chat bot page](screenshots/chatbot.jpg)
 ![ medical-symptom-analyzer page](screenshots/medical-symptom-analyzer.png)
 
+### video 
 
+<video width="600" controls  width="700" controls autoplay>
+  <source src="screenshots/morehealth.MP4" type="video/mp4">
+</video>
+
+
+![ healthmore video](screenshots/morehealth.MP4)
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/SjC81bYbjKM?si=5LK9OtZ2hqxjIHX6" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
