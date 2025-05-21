@@ -17,7 +17,7 @@ MoreHealth is an AI-driven health assistant platform where users interact with a
 * **Python 3.13**
 * **Django 5**
 * **Django REST Framework**
-* **PostgreSQL **
+* **PostgreSQL**
 * **Additional Packages**:
 
   * `django-cors-headers` for CORS management
@@ -110,7 +110,7 @@ MoreHealth is an AI-driven health assistant platform where users interact with a
    * sign up as regleur user : `http://127.0.0.1:8000/auth/signup`
    * login : `http://127.0.0.1:8000//auth/login`
    * test token : ` http://127.0.0.1:8000/auth/test-token`
-   * 
+     
 
 ---
 
