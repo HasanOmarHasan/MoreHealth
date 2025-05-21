@@ -184,8 +184,10 @@ MoreHealth is an AI-driven health assistant platform where users interact with a
   <source src="screenshots/morehealth.MP4" type="video/mp4">
 </video>
 
-
+Download 
 ![ healthmore video](screenshots/morehealth.MP4)
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/SjC81bYbjKM?si=5LK9OtZ2hqxjIHX6" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+Or Youtube  [link](https://youtu.be/SjC81bYbjKM?si=FislHnPxG2mNxOyn)
+
+
 
