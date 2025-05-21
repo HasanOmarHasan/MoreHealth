@@ -161,4 +161,22 @@ MoreHealth is an AI-driven health assistant platform where users interact with a
 ---
 
 
+![home Page](screenshots/homepage.png)
+### Commenity
+![groups Page](screenshots/groups.png)
+![quetion Page](screenshots/quetion.png)
+![ verify doctor ](screenshots/verify_doctor.png)
+### Auth
+![ login page](screenshots/login.png)
+![ signup page](screenshots/signup.png)
+### Chat and Frinds
+![ friend reqest page](screenshots/friend-reqest.png)
+![ chat-message page](screenshots/chat-message.png)
+![ chat-room page](screenshots/chat-chatroom.png)
+
+### AI and deep learing model
+![ chat bot page](screenshots/chatbot.jpg)
+![ medical-symptom-analyzer page](screenshots/medical-symptom-analyzer.png)
+
+
 
