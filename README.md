@@ -1,5 +1,5 @@
-# MoreHealth AI Chatbot
-MoreHealth is an AI-driven health assistant platform where users interact with an intelligent chatbot to describe symptoms and receive personalized treatment recommendations. The system leverages custom-built machine learning models to analyze user input, suggest evidence-based remedies, and offer additional AI-powered health services such as lifestyle advice, medication info, and preventive care tips.
+# MoreHealth AI GenAI 
+MoreHealth is an AI-driven health assistant platform where users interact with an artificial intelligences genAI to describe symptoms and receive personalized treatment recommendations. The system leverages custom-built machine learning models to analyze user input, suggest evidence-based remedies, and offer additional AI-powered health services such as lifestyle advice, medication info, and preventive care tips.
 
 ## High-Level Architecture
 
