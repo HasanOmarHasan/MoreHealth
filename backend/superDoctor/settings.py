@@ -102,16 +102,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'superDoctor.wsgi.application'
 
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'db_healthcare',
-        'USER': 'postgres',
-        'PASSWORD': 'admin',
-        'HOST': 'localhost',  # or your PostgreSQL server IP
-        'PORT': '5432',       # default PostgreSQL port
+        'NAME': 'postgres',  # اسم قاعدة البيانات
+        'USER': 'postgres.glzlujdqhmxpyzbagsir',  # اسم المستخدم
+        'PASSWORD': 'samirsaid012700',  # كلمة المرور
+        'HOST': 'aws-0-eu-central-1.pooler.supabase.com',  # عنوان السيرفر
+        'PORT': '5432',  # المنفذ
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
