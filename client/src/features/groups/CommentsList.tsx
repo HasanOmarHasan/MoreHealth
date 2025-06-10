@@ -10,6 +10,7 @@ import { useParams } from "react-router-dom";
 import ReactTimeAgo from "react-time-ago";
 import "../../utils/timeAgoConfig";
 import verify from "../../assets/img/Verified_Badge.svg";
+// import { q } from "motion/react-client";
 
 interface Comment {
   id: number;
@@ -69,7 +70,7 @@ const CommentsList = () => {
         parent: replyingTo,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries(["comments", numericQuestionId]);
+      queryClient.invalidateQueries({queryKey : ["comments", numericQuestionId]});
       setNewComment("");
       setReplyingTo(null);
     },
@@ -82,7 +83,7 @@ const CommentsList = () => {
         content: data.content,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries(["comments", numericQuestionId]);
+      queryClient.invalidateQueries({queryKey :["comments", numericQuestionId]});
       setEditingId(null);
       toast.success("Comment update");
     },
@@ -92,7 +93,7 @@ const CommentsList = () => {
   const deleteComment = useMutation({
     mutationFn: (id: number) => axiosClient.delete(`groups/comments/${id}/`),
     onSuccess: () => {
-      queryClient.invalidateQueries(["comments", numericQuestionId]);
+      queryClient.invalidateQueries({queryKey : ["comments", numericQuestionId]});
       toast.success("Comment deleted");
     },
     onError: () => toast.error("Failed to delete comment"),
@@ -102,7 +103,7 @@ const CommentsList = () => {
     mutationFn: (id: number) =>
       axiosClient.post(`/groups/upvote/comment/${id}/`),
     onSuccess: () =>
-      queryClient.invalidateQueries(["comments", numericQuestionId]),
+      queryClient.invalidateQueries({queryKey : ["comments", numericQuestionId]}),
   });
 
   const renderComment = (comment: Comment, depth = 0) => {
@@ -138,7 +139,7 @@ const CommentsList = () => {
                   {comment.user.username}
                 </span>
                 <span className="text-sm text-gray-500">
-                  <ReactTimeAgo date={comment.created_at} locale="en-US" />
+                  <ReactTimeAgo date={new Date(comment.created_at)} locale="en-US" />
                 </span>
                 {/* {comment.is_edited && (
                   <span className="text-xs italic text-gray-500">(edited)</span>
@@ -147,7 +148,7 @@ const CommentsList = () => {
                   new Date(comment?.created_at).getTime() && (
                   <span className="text-xs text-gray-500 ml-2 italic">
                     (edited at{" "}
-                    {<ReactTimeAgo date={comment.updated_at} locale="en-US" />})
+                    {<ReactTimeAgo date={new Date(comment.updated_at)} locale="en-US" />})
                   </span>
                 )}
 
@@ -253,9 +254,9 @@ const CommentsList = () => {
                       })
                     }
                     className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                    disabled={updateComment.isLoading}
+                    disabled={updateComment.isPending }
                   >
-                    {updateComment.isLoading ? "Saving..." : "Save Changes"}
+                    {updateComment.isPending  ? "Saving..." : "Save Changes"}
                   </button>
                   <button
                     onClick={() => setEditingId(null)}
@@ -281,9 +282,9 @@ const CommentsList = () => {
                     <button
                       onClick={() => createComment.mutate(newComment)}
                       className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                      disabled={createComment.isLoading}
+                      disabled={createComment.isPending }
                     >
-                      {createComment.isLoading ? "Posting..." : "Post Reply"}
+                      {createComment.isPending  ? "Posting..." : "Post Reply"}
                     </button>
                     <button
                       onClick={() => setReplyingTo(null)}
@@ -333,7 +334,7 @@ const CommentsList = () => {
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <span>Asked by {question.user.username}</span>
               <span>•</span>
-              <ReactTimeAgo date={question.created_at} locale="en-US" />
+              <ReactTimeAgo date={new Date(question.created_at)} locale="en-US" />
             </div>
           </div>
         )}
@@ -355,9 +356,9 @@ const CommentsList = () => {
             <button
               onClick={() => createComment.mutate(newComment)}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              disabled={createComment.isLoading}
+              disabled={createComment.isPending }
             >
-              {createComment.isLoading ? "Posting..." : "Post Comment"}
+              {createComment.isPending  ? "Posting..." : "Post Comment"}
             </button>
           </div>
         </div>

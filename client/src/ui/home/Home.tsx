@@ -1,4 +1,3 @@
-import React from "react";
 import ContentSection from "./ContentSection";
 import Testimonials from "./Testimonials";
 import FQA from "./FQA";

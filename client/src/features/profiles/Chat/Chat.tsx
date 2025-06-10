@@ -1,9 +1,9 @@
 // src/features/chat/ChatDashboard.tsx
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axiosClient , {  startChat }  from "../../../services/axiosClient";
+import axiosClient, { startChat } from "../../../services/axiosClient";
 import { useAuth } from "../../../context/Auth";
 import { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Loader from "../../../ui/Loader";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
@@ -32,21 +32,26 @@ interface Friend {
   sender: { id: number; username: string };
   receiver: { id: number; username: string };
   status: string;
+  created_at: string;
 }
 
-interface FriendRequest extends Friend {}
+interface FriendRequest  {
+  id: number;
+  sender: { id: number; username: string };
+  receiver: { id: number; username: string };
+  status: string;
+  created_at: string;
+}
+
 
 const Chat = () => {
   const { user } = useAuth();
-  const [roomId, setRoomId] = useState(0)
-  const [userId, setuserId] = useState(undefined)
+  const [roomId, setRoomId] = useState(0);
+  // const [userId, setuserId] = useState(undefined);
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<"chats" | "friends" | "requests">(
     "chats"
   );
-
-
-  
 
   // Fetch data
   const { data: chatRooms, isLoading: roomsLoading } = useQuery<ChatRoom[]>({
@@ -59,7 +64,7 @@ const Chat = () => {
     queryFn: () => axiosClient.get("/chat/friends/").then((res) => res.data),
   });
 
-  const { data: friendRequests, isLoading: requestsLoading } = useQuery<
+  const { data: friendRequests, isPending: requestsLoading } = useQuery<
     FriendRequest[]
   >({
     queryKey: ["friendRequests"],
@@ -77,34 +82,34 @@ const Chat = () => {
       action: "accept" | "reject";
     }) => axiosClient.patch(`/chat/friend-requests/${requestId}/`, { action }),
     onSuccess: () => {
-      queryClient.invalidateQueries(["friendRequests"]);
-      queryClient.invalidateQueries(["friends"]);
+      queryClient.invalidateQueries({ queryKey: ["friendRequests"] });
+      queryClient.invalidateQueries({ queryKey: ["friends"] });
       toast.success("Request updated");
     },
     onError: () => toast.error("Failed to update request"),
   });
 
-  console.log()
-    // Start Chat Mutation
-    const startChatMutation = useMutation({
-      mutationFn: (userId: number) => startChat(userId),
-      onSuccess: (data) => {
-        console.log(data.data.room_id)
-        window.location.replace(`/profile/Messages/${data.data.room_id}`);
-        toast.success("Chat started successfully!");
-        // console.log(data);
-        // toast.success(data.data);
-      },
-  
-      onError: (error) => {
-        console.log(error);
-        toast.error("Failed to start chat");
-      },
-    });
+  console.log();
+  // Start Chat Mutation
+  const startChatMutation = useMutation({
+    mutationFn: (userId: number) => startChat(userId),
+    onSuccess: (data) => {
+      console.log(data.data.room_id);
+      window.location.replace(`/profile/Messages/${data.data.room_id}`);
+      toast.success("Chat started successfully!");
+      // console.log(data);
+      // toast.success(data.data);
+    },
+
+    onError: (error) => {
+      console.log(error);
+      toast.error("Failed to start chat");
+    },
+  });
 
   if (roomsLoading || friendsLoading || requestsLoading) return <Loader />;
 
-  console.log(roomId)
+  console.log(roomId);
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Left sidebar */}
@@ -162,7 +167,6 @@ const Chat = () => {
                   <Link
                     onClick={() => setRoomId(room.id)}
                     to={`/profile/messages/${room.id}`}
-                  
                     className="flex items-center gap-4"
                   >
                     <div className="flex-1">
@@ -219,13 +223,16 @@ const Chat = () => {
                     <button
                       // to={`profile/messages/${roomId}`}
                       // to={`/messages/${findPrivateChatId(otherUser.id)}`}
-                      onClick={() => { startChatMutation.mutate(otherUser.id); setuserId(otherUser.id); }}
-
-                            disabled={startChatMutation.isLoading}
+                      onClick={() => {
+                        startChatMutation.mutate(otherUser.id);
+                        // setuserId(otherUser.id);
+                      }}
+                      disabled={
+                        startChatMutation.isPending || startChatMutation.isError
+                      }
                       className="p-2 hover:bg-gray-200 rounded-full"
                     >
                       <svg
-                        
                         className="w-5 h-5"
                         fill="none"
                         stroke="currentColor"
@@ -320,7 +327,7 @@ const Chat = () => {
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="font-semibold mb-4">Start New Chat</h3>
               {/* New chat functionality here */}
-              <Messages  />
+              <Messages />
             </div>
           )}
         </div>
@@ -330,12 +337,12 @@ const Chat = () => {
 };
 
 // Helper function to find private chat ID
-const findPrivateChatId = (userId: number, chatRooms?: ChatRoom[]) => {
-  if (!chatRooms) return null;
-  const room = chatRooms.find(
-    (r) => r.is_private && r.other_user?.id === userId
-  );
-  return room?.id;
-};
+// const findPrivateChatId = (userId: number, chatRooms?: ChatRoom[]) => {
+//   if (!chatRooms) return null;
+//   const room = chatRooms.find(
+//     (r) => r.is_private && r.other_user?.id === userId
+//   );
+//   return room?.id;
+// };
 
 export default Chat;

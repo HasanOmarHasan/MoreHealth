@@ -20,10 +20,12 @@ interface Group {
   name: string;
   description: string;
   creator: { id: number };
-  members: Array<{ id: number }>;
-  tags: string[];
+  // members: Array<{ id: number }>;
+  members: { id: number }[];
+  // tags: string[];
   created_at: string;
-  image?: string | File;
+  updated_at: string;
+  // image?: string | File;
 }
 
 const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
@@ -31,10 +33,11 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
-  const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
+  // const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  // const [searchTerm, setSearchTerm] = useState("");
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
@@ -52,7 +55,7 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
     ordering: "-members_count",
   });
 
-  const { data: groups, isLoading } = useQuery({
+  const { data: groups = [] as Group[], isLoading } = useQuery({
     queryKey: ["groups", filters],
     // queryFn: () => axiosClient.get("/groups/").then((res) => res.data),
 
@@ -82,9 +85,15 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
 
       return axiosClient.get("/groups/", { params }).then((res) => res.data);
     },
-    keepPreviousData: true,
+    // keepPreviousData: true,
   });
-  const handleFilterChange = (field: keyof typeof filters, value: any) => {
+  // const handleFilterChange = (field: keyof typeof filters, value: any) => {
+  //   setFilters((prev) => ({ ...prev, [field]: value }));
+  // };
+  const handleFilterChange = <K extends keyof typeof filters>(
+    field: K,
+    value: (typeof filters)[K]
+  ) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -94,7 +103,7 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
       axiosClient.post(`/groups/${groupId}/join/`),
     onSuccess(data) {
       toast.success(data.data.status);
-      queryClient.invalidateQueries(["groups"]);
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
     },
     onError(error) {
       toast.error(error.message);
@@ -105,7 +114,7 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
     mutationFn: (newGroup: { name: string; description: string }) =>
       axiosClient.post("/groups/", newGroup),
     onSuccess: () => {
-      queryClient.invalidateQueries(["groups"]);
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
       toast.success("Group created successfully!");
       setIsModalOpen(false);
     },
@@ -123,7 +132,6 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
       image: string;
       // tags: string[];
     }) =>
-     
       axiosClient.patch(`/groups/${updatedData.id}/`, {
         name: updatedData.name,
         description: updatedData.description,
@@ -131,7 +139,7 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
       }),
 
     onSuccess: () => {
-      queryClient.invalidateQueries(["groups"]); // Uncomment this
+      queryClient.invalidateQueries({ queryKey: ["groups"] }); // Uncomment this
       toast.success("Group updated successfully!");
       setIsModalOpen(false);
     },
@@ -144,7 +152,7 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
   const deleteMutation = useMutation({
     mutationFn: (groupId: number) => axiosClient.delete(`/groups/${groupId}/`),
     onSuccess: () => {
-      queryClient.invalidateQueries(["groups"]); // Uncomment this
+      queryClient.invalidateQueries({ queryKey: ["groups"] }); // Uncomment this
       toast.success("Group deleted successfully!");
     },
     onError: (error) => {
@@ -177,27 +185,16 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
   };
 
   ////////////////////////////////
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      const file = e.target.files[0];
-      if (!file.type.startsWith("image/")) {
-        toast.error("Please upload an image file");
-        return;
-      }
-      setSelectedImage(file);
-    }
-  };
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 500);
-
-    return () => clearTimeout(handler);
-  }, [searchTerm]);
-
-  console.log(groups);
-  // console.log(user);
+  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (e.target.files?.[0]) {
+  //     const file = e.target.files[0];
+  //     if (!file.type.startsWith("image/")) {
+  //       toast.error("Please upload an image file");
+  //       return;
+  //     }
+  //     setSelectedImage(file);
+  //   }
+  // };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -375,7 +372,10 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
               <input
                 type="search"
                 value={filters.search}
-                onChange={(e) => handleFilterChange("search", e.target.value)}
+                onChange={(e) => {
+                  handleFilterChange("search", e.target.value);
+                  setDebouncedSearchTerm(e.target.value);
+                }}
                 className="w-full p-2 border rounded-md"
                 placeholder="Search 🔎... Creator usernames,Group names,Desc, etc."
               />
@@ -470,7 +470,7 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
                 <div
                   className={` gap-4  grid  grid-cols-1 lg:grid-cols-3 lg:gap-8 md:grid-cols-2`}
                 >
-                  {groups?.map((group) => (
+                  {groups?.map((group: Group) => (
                     <div key={group.id}>
                       <article className="overflow-hidden rounded-lg shadow-sm transition hover:shadow-lg">
                         {/* <img
@@ -489,7 +489,7 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
                             <div className="flex justify-between items-center text-sm">
                               <span className="text-gray-500">
                                 <ReactTimeAgo
-                                  date={group.created_at}
+                                  date={new Date(group.created_at)}
                                   locale="en-US"
                                 />
                               </span>
@@ -509,7 +509,7 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
                                   (edited at{" "}
                                   {
                                     <ReactTimeAgo
-                                      date={group.updated_at}
+                                      date={new Date(group.updated_at)}
                                       locale="en-US"
                                     />
                                   }
@@ -523,7 +523,7 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
                             </p>
                           </Link>
 
-                          {group.tags.length > 0 && (
+                          {/* {group.tags.length > 0 && (
                             <div className="flex gap-2">
                               {group.tags.map((tag) => (
                                 <span
@@ -534,14 +534,16 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
                                 </span>
                               ))}
                             </div>
-                          )}
+                          )} */}
 
                           <div className="mt-2 flex justify-between items-center">
                             <div className="">
                               <button
                                 onClick={() => joinMutation.mutate(group.id)}
                                 className={`px-4 py-2 rounded-lg ${
-                                  group.members.some((m) => m.id === user?.id)
+                                  group.members.some(
+                                    (m: { id: number }) => m.id === user?.id
+                                  )
                                     ? "bg-gray-200 text-gray-700"
                                     : "bg-blue-100 text-blue-700"
                                 }`}
@@ -621,7 +623,7 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
       {isModalOpen && (
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          animate={{ opacity: 0.9 }}
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
           onClick={() => setIsModalOpen(false)}
         >
@@ -658,7 +660,7 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
                     required
                   />
                 </div>
-                
+
                 <div className="flex justify-end gap-4">
                   <button
                     type="button"
@@ -670,7 +672,7 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
                   <button
                     type="submit"
                     disabled={
-                      createMutation.isLoading || updateMutation.isLoading
+                      createMutation.isPending || updateMutation.isPending
                     }
                     className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
                   >

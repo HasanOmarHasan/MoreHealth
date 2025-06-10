@@ -1,4 +1,3 @@
-import React from "react";
 
 type Props = { size?:   "btn" , color?: string  };
 export default function Loader({ size , color = 'text-blue-600' }: Props) {

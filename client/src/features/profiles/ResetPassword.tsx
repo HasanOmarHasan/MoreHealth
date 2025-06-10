@@ -28,9 +28,10 @@ const ResetPassword = () => {
           // Changed to GET request for token validation
           await axiosClient.get(`/auth/reset-password/?token=${token}`);
           setIsTokenValid(true);
-        } catch (error) {
+        } catch (error : unknown ) {
           setIsTokenValid(false);
           toast.error("Invalid or expired reset token");
+          console.log(error)
         }
       }
     };
@@ -74,16 +75,18 @@ const ResetPassword = () => {
       toast.success(e.data.message);
       navigate("/login");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
    
-      const errorMessages = error.response?.data?.message;
-      if (Array.isArray(errorMessages)) {
-        const formattedError = errorMessages.join(" ");
-        console.log(formattedError);
-        toast.error(formattedError);
-      } else {
-        toast.error(error.response?.data?.message || "Password reset failed");
-      }
+      // const errorMessages = error.response?.data?.message;
+      // if (Array.isArray(errorMessages)) {
+      //   const formattedError = errorMessages.join(" ");
+      //   console.log(formattedError);
+        // toast.error(formattedError);
+      // } else {
+      //   toast.error(error.response?.data?.message || "Password reset failed");
+      // }
+      const errorMessages = error instanceof Error ? error.message : '"Password reset failed"';  
+      toast.error(errorMessages);
     },
   });
 

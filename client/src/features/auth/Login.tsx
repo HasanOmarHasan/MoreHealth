@@ -52,14 +52,21 @@ const Login = () => {
       // setTkn(response.data.Token)
       initializeAuth();
       
-      
-      // console.log(response.data.Token)
-      // console.log(response.data)
-
-      toast.success("Login successful!");
-      navigate("/");
-    } catch (error: any | null) {
-      toast.error(error.response?.data?.error || "Login failed");
+      // console.log(response.data.Token);
+      // console.log(response, "response");
+      if (response.status >= 200 && response.status < 300) {
+        toast.success("Login successful!");
+        navigate("/");
+      } else {
+        toast.error("Login failed. Please try again.");
+      }
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Login failed Error message:", error.message);
+      } else {
+        console.error("Unknown error:", error);
+      }
+      console.log(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -72,9 +79,7 @@ const Login = () => {
           Get started today
         </h2>
 
-        <p className="mx-auto mt-4 max-w-md text-center text-gray-500">
-          
-        </p>
+        <p className="mx-auto mt-4 max-w-md text-center text-gray-500"></p>
         {/* ... existing layout ... */}
 
         <form
@@ -123,19 +128,18 @@ const Login = () => {
             content="Log in"
           ></Button>
           <div className="flex justify-between">
-
-          <p className=" text-sm text-gray-500">
-            No account?
-            <Link className="underline" to="/signup/patient">
-              Sign up
-            </Link>
-          </p>
-          <p className=" text-sm text-gray-500">
-            Forget password?
-            <Link className="underline" to="/reset-password">
-              Reset password
-            </Link>
-        </p>
+            <p className=" text-sm text-gray-500">
+              No account?
+              <Link className="underline" to="/signup/patient">
+                Sign up
+              </Link>
+            </p>
+            <p className=" text-sm text-gray-500">
+              Forget password?
+              <Link className="underline" to="/reset-password">
+                Reset password
+              </Link>
+            </p>
           </div>
         </form>
       </div>

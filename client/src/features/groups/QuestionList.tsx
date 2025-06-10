@@ -17,10 +17,23 @@ interface Question {
   title: string;
   content: string;
   creator?: { id: number };
-  upvotes: number;
+  upvotes: number[];
   created_at: string;
   tags: string[];
   group: number;
+  has_upvoted: boolean;
+  updated_at: string;
+  user: {
+    id: number;
+    username: string;
+    avatar?: string;
+    type?: string;
+    verify_Doctor?: boolean;
+  };
+}
+
+interface QuestionMutationContext {
+  previousQuestions?: Question[];
 }
 // interface Comment {
 //   id: number;
@@ -87,7 +100,7 @@ const QuestionList = () => {
     mutationFn: (newQuestion: { title: string; content: string }) =>
       axiosClient.post(`/groups/${groupId}/questions/`, newQuestion),
     onSuccess: () => {
-      queryClient.invalidateQueries(["questions", groupId]);
+      queryClient.invalidateQueries({ queryKey: ["questions", groupId] });
       toast.success("Question created successfully!");
       setIsModalOpen(false);
     },
@@ -104,7 +117,7 @@ const QuestionList = () => {
         content: updatedData.content,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries(["questions", groupId]);
+      queryClient.invalidateQueries({ queryKey: ["questions", groupId] });
       toast.success("Question updated successfully!");
       setIsModalOpen(false);
     },
@@ -118,7 +131,7 @@ const QuestionList = () => {
     mutationFn: (questionId: number) =>
       axiosClient.delete(`/groups/questions/${questionId}/`),
     onSuccess: () => {
-      queryClient.invalidateQueries(["questions", groupId]);
+      queryClient.invalidateQueries({ queryKey: ["questions", groupId] });
       toast.success("Question deleted successfully!");
     },
     onError: (error) => {
@@ -131,7 +144,7 @@ const QuestionList = () => {
     mutationFn: (questionId: number) =>
       axiosClient.post(`/groups/upvote/question/${questionId}/`),
     onMutate: async (questionId) => {
-      await queryClient.cancelQueries(["questions", groupId]);
+      await queryClient.cancelQueries({ queryKey: ["questions", groupId] });
 
       const previousQuestions = queryClient.getQueryData<Question[]>([
         "questions",
@@ -145,7 +158,7 @@ const QuestionList = () => {
                 ...question,
                 has_upvoted: !question.has_upvoted,
                 upvotes: question.has_upvoted
-                  ? question.upvotes.filter((id) => id !== user?.id)
+                  ? question.upvotes.filter((id: number) => id !== user?.id)
                   : ([...question.upvotes, user?.id].filter(
                       Boolean
                     ) as number[]),
@@ -156,14 +169,16 @@ const QuestionList = () => {
 
       return { previousQuestions };
     },
-    onError: (err, variables, context) => {
+    onError: (err, _, context: QuestionMutationContext | undefined) => {
       queryClient.setQueryData(
         ["questions", groupId],
         context?.previousQuestions
       );
+      console.error("Failed to upvote:", err);
+      toast.error("Failed to upvote question");
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["questions", groupId]);
+      queryClient.invalidateQueries({ queryKey: ["questions", groupId] });
     },
   });
 
@@ -180,8 +195,8 @@ const QuestionList = () => {
 
     onError: (error) => {
       console.log(error);
-      // toast.error("Failed to send friend request");
-      toast.error(error.response?.data?.detail);
+      toast.error("Failed to send friend request");
+      // toast.error(error?.response?.data?.detail);
     },
   });
 
@@ -214,7 +229,16 @@ const QuestionList = () => {
     };
 
     if (selectedQuestion) {
-      updateMutation.mutate({ ...selectedQuestion, ...questionData });
+      if (typeof selectedQuestion.id !== "number") {
+        throw new Error("Cannot update question without a valid ID");
+      }
+      const updatePayload = {
+        id: selectedQuestion.id,
+        title: questionData.title,
+        content: questionData.content,
+      };
+      // updateMutation.mutate({ ...selectedQuestion, ...questionData });
+      updateMutation.mutate(updatePayload);
     } else {
       createMutation.mutate(questionData);
     }
@@ -336,7 +360,7 @@ const QuestionList = () => {
                   questions?.length <= 2 && "h-screen"
                 }`}
               >
-                {questions?.map((question) => (
+                {questions?.map((question: Question) => (
                   <motion.div
                     key={question.id}
                     initial={{ opacity: 0, y: 10 }}
@@ -345,14 +369,14 @@ const QuestionList = () => {
                   >
                     <div className="flex items-start justify-between">
                       <button
-                        onClick={() => handleUpvote(question.id)}
+                        onClick={() => handleUpvote(question.id as number)}
                         className="flex flex-col items-center mr-4 group relative"
-                        disabled={upvoteMutation.isLoading}
+                        disabled={upvoteMutation.isPending}
                       >
                         <HeartIcon filled={question.has_upvoted} />
                         <span
                           className={`text-sm mt-1 ${
-                            question.has_upveted
+                            question.has_upvoted
                               ? "text-red-500"
                               : "text-gray-500"
                           }`}
@@ -375,7 +399,7 @@ const QuestionList = () => {
                                 (edited at{" "}
                                 {
                                   <ReactTimeAgo
-                                    date={question.updated_at}
+                                    date={new Date(question.updated_at)}
                                     locale="en-US"
                                   />
                                 }
@@ -392,11 +416,8 @@ const QuestionList = () => {
                         <div className="mt-4 flex items-center text-sm text-gray-500">
                           <span className="mr-4">
                             Asked{" "}
-                            {/* {new Date(question.created_at).toLocaleDateString(
-                        "ar-eg"
-                      )} */}
                             <ReactTimeAgo
-                              date={question.created_at}
+                              date={new Date(question.created_at)}
                               locale="en-US"
                             />
                           </span>
@@ -441,7 +462,10 @@ const QuestionList = () => {
                                   "Are you sure you want to delete this question?"
                                 )
                               ) {
-                                deleteMutation.mutate(question.id);
+                                // deleteMutation.mutate(question?.id);
+                                if (question.id !== undefined) {
+                                  deleteMutation.mutate(question.id);
+                                }
                               }
                             }}
                             className="p-2 hover:bg-gray-100 rounded-full text-gray-600 hover:text-red-600 transition-colors"
@@ -472,7 +496,7 @@ const QuestionList = () => {
               {isModalOpen && (
                 <motion.div
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
+                  animate={{ opacity: 0.9 }}
                   className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
                   onClick={() => setIsModalOpen(false)}
                 >
@@ -520,8 +544,8 @@ const QuestionList = () => {
                           <button
                             type="submit"
                             disabled={
-                              createMutation.isLoading ||
-                              updateMutation.isLoading
+                              createMutation.isPending ||
+                              updateMutation.isPending
                             }
                             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
                           >
@@ -542,76 +566,87 @@ const QuestionList = () => {
                 Group Members
               </h2>
               <div className="space-y-4">
-                {questions[0]?.members?.map((member) => (
-                  <div
-                    key={member.id}
-                    className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-                          {member.username}
-                          {member.type === "doctor" && (
-                            <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                              Doctor
-                            </span>
+                {questions[0]?.members?.map(
+                  (member: {
+                    id: number;
+                    username: string;
+                    type: string;
+                    specialization: string;
+                  }) => (
+                    <div
+                      key={member.id}
+                      className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                            {member.username}
+                            {member.type === "doctor" && (
+                              <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                                Doctor
+                              </span>
+                            )}
+                          </h3>
+                          {member.specialization && (
+                            <p className="text-sm text-gray-600 mt-1 text-start ">
+                              ( {member.specialization} )
+                            </p>
                           )}
-                        </h3>
-                        {member.specialization && (
-                          <p className="text-sm text-gray-600 mt-1 text-start ">
-                            ( {member.specialization} )
-                          </p>
+                        </div>
+
+                        {member.id !== user?.id && member.type === "doctor" && (
+                          <div className="flex gap-2 ml-4">
+                            <button
+                              onClick={() =>
+                                addFriendMutation.mutate(member.id)
+                              }
+                              disabled={addFriendMutation.isPending}
+                              className="p-1.5 rounded-full bg-green-100 hover:bg-green-200 text-green-700"
+                              data-tooltip="Add Friend"
+                            >
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                                />
+                              </svg>
+                            </button>
+
+                            <button
+                              onClick={() =>
+                                startChatMutation.mutate(member.id)
+                              }
+                              disabled={startChatMutation.isPending}
+                              className="p-1.5 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-700 "
+                              data-tooltip="Start Chat"
+                            >
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                                />
+                              </svg>
+                            </button>
+                          </div>
                         )}
                       </div>
-
-                      {member.id !== user?.id && member.type === "doctor" && (
-                        <div className="flex gap-2 ml-4">
-                          <button
-                            onClick={() => addFriendMutation.mutate(member.id)}
-                            disabled={addFriendMutation.isLoading}
-                            className="p-1.5 rounded-full bg-green-100 hover:bg-green-200 text-green-700"
-                            data-tooltip="Add Friend"
-                          >
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                              />
-                            </svg>
-                          </button>
-
-                          <button
-                            onClick={() => startChatMutation.mutate(member.id)}
-                            disabled={startChatMutation.isLoading}
-                            className="p-1.5 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-700 "
-                            data-tooltip="Start Chat"
-                          >
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      )}
                     </div>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             </div>
           </div>

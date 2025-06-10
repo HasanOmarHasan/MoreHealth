@@ -8,6 +8,11 @@ interface User {
   email: string;
   medical_insurance: boolean;
   type: 'doctor' | 'patient';
+  phone: string;
+  city: string;
+  region: string;
+  age: number | undefined;
+  
 }
 
 interface AuthContextType {

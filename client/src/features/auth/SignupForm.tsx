@@ -1,10 +1,11 @@
 // Signup.tsx
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Button from "../../ui/Button";
 import InputItem from "../../ui/InputItem";
 import { toast } from "react-toastify";
 import axiosClient from "../../services/axiosClient";
+import { useAuth } from "../../context/Auth";
 
 interface SignupProps {
   userType: "patient" | "doctor";
@@ -13,6 +14,7 @@ interface SignupProps {
 
 const Signup = ({ userType, endpoint }: SignupProps) => {
   const navigate = useNavigate();
+  const { initializeAuth } = useAuth();
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -23,10 +25,8 @@ const Signup = ({ userType, endpoint }: SignupProps) => {
     age: "",
     gender: "male",
     medical_insurance: false,
-    // ...(userType === "doctor" && {
     specialization: "",
     practice_permit: "",
-    // }),
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -105,47 +105,57 @@ const Signup = ({ userType, endpoint }: SignupProps) => {
     e.preventDefault();
     setIsSubmitting(true);
 
+    const user = {
+      username: formData.username,
+      email: formData.email,
+      password: formData.password,
+      phone: formData.phone,
+      city: formData.city,
+      region: formData.region,
+      age: Number(formData.age), // Ensure conversion to number
+      gender: formData.gender,
+      medical_insurance: formData.medical_insurance,
+    };
     try {
       const payload =
         userType === "doctor"
           ? {
-              user: {
-                username: formData.username,
-                email: formData.email,
-                password: formData.password,
-                phone: formData.phone,
-                city: formData.city,
-                region: formData.region,
-                age: Number(formData.age), // Convert to number
-                gender: formData.gender,
-                // medical_insurance: formData.medical_insurance,
-              },
+              user: user,
               specialization: formData.specialization,
               practice_permit: formData.practice_permit,
             }
           : { ...formData };
-      const response = await axiosClient.post(endpoint, payload);
-
-      console.log(formData);
+      console.log(payload, " payload ");
+      const response = await axiosClient.post(endpoint, payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       console.log(response);
       if (response.status >= 200 && response.status < 300) {
         toast.success("Signup successful! Please login.");
+        if (userType === "doctor") {
+          navigate("/login");
+        } else {
+          localStorage.setItem("authToken", response.data.access);
+          localStorage.setItem("user", JSON.stringify(response.data.user));
 
-        navigate("/login");
-        //   return redirect("/login");
+          initializeAuth();
+          navigate("/");
+        }
+
+        // return userType === "doctor" ?  redirect("/login") : navigate("/");
       }
-    } catch (error: any) {
-      console.error("Signup Error:", error.response?.data);
+    } catch (error: unknown) {
       const errorMessage =
-        Object.entries(error?.response?.data || {})
-          .map(([key, messages]) => {
-            const messageList = Array.isArray(messages) ? messages : [messages];
-            return `${key}: ${messageList.join(", ")}`;
-          })
-          .join("; ") || "An unexpected error occurred";
+        error instanceof Error
+          ? error.message
+          : "Signup failed. Please check your inputs.";
+      console.log(error, "all error");
+      console.log(errorMessage, "error massage ");
 
-      toast.error(errorMessage || "Signup failed. Please check your inputs.");
+      toast.error("Signup failed. Please check your inputs.");
     } finally {
       setIsSubmitting(false);
     }
@@ -257,7 +267,7 @@ const Signup = ({ userType, endpoint }: SignupProps) => {
                   />
                 </>
               )}
-              <div className="col-span-6 flex gap-4">
+              {/* <div className="col-span-6 flex gap-4">
                 <span className="px-3 text-gray-700 transition-all">
                   Add medical insurance :
                 </span>
@@ -302,7 +312,7 @@ const Signup = ({ userType, endpoint }: SignupProps) => {
                     </svg>
                   </span>
                 </label>
-              </div>
+              </div> */}
               <div className="col-span-6">
                 <label htmlFor="MarketingAccept" className="flex gap-4">
                   <input

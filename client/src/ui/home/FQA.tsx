@@ -2,7 +2,6 @@
 
 
 //FQA.tsx
-import React from "react";
 
 export default function FQA() {
   return (

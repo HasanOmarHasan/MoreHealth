@@ -8,6 +8,8 @@ import { motion } from 'framer-motion';
 import InputItem from '../../ui/InputItem';
 import Button from '../../ui/Button';
 
+
+
 interface FormData {
   username: string;
   phone: string;
@@ -18,7 +20,7 @@ interface FormData {
 }
 
 const Account = () => {
-  const { user, initializeAuth } = useAuth();
+  const { user , initializeAuth } = useAuth();
   const [formData, setFormData] = useState<FormData>({
     username: '',
     phone: '',
@@ -28,9 +30,12 @@ const Account = () => {
     medical_insurance: false,
   });
 
+
+ 
+
   // Initialize form with user data
   useEffect(() => {
-    if (user) {
+    if (user ) {
       setFormData({
         username: user.username || '',
         phone: user.phone || '',

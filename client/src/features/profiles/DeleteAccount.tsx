@@ -25,10 +25,12 @@ const DeleteAccount = () => {
       toast.success("Account permanently deleted");
       logout();
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast.error(
-        error.response?.data?.message || "Deletion failed. Please try again."
+         "Deletion failed. Please try again."
       );
+      // error.response?.data?.message ||
+      console.log(error)
     },
   });
 
