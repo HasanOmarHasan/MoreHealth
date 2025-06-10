@@ -45,6 +45,15 @@ const validateField = (name: string, value: string) => {
   return "";
 };
 
+
+interface FormData {
+  email: string;
+   username: string ;
+   
+    password: string ;
+    phone: string ;
+}
+
 export async function action({ request }: { request: Request }) {
   const formData = await request.formData();
   const requestData = Object.fromEntries(formData.entries());
@@ -80,7 +89,7 @@ export default function Signup() {
   const actionData = useActionData() as { errors?: Record<string, string> };
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     username: "",
     email: "",
     password: "",
@@ -92,7 +101,7 @@ export default function Signup() {
   const allTouched =
     Object.keys(touched).length === Object.keys(formData).length;
   const hasErrors = Object.values(errors).some((error) => error);
-  const isFormValid = allTouched && !hasErrors;
+  // const isFormValid = allTouched && !hasErrors;
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
