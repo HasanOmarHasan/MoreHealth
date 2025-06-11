@@ -350,12 +350,16 @@ export default function Header() {
           <ul>
 
             <li>
+              {isLoggedIn &&
+              
+              
               <button
                 onClick={handleLogout}
                 className="w-full rounded-lg px-4 py-2 text-left text-sm font-medium text-red-400 hover:bg-red-100 hover:text-red-600"
               >
                 Logout
               </button>
+              }
             </li>
           </ul>
         </div>
