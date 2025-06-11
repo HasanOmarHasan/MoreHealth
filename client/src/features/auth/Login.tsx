@@ -135,9 +135,9 @@ const Login = () => {
               </Link>
             </p>
             <p className=" text-sm text-gray-500">
-              Forget password?
+              
               <Link className="underline" to="/reset-password">
-                Reset password
+                Forget password?
               </Link>
             </p>
           </div>
