@@ -22,7 +22,7 @@ export default function Hero() {
 
               <div className="mt-8 flex flex-wrap justify-center gap-4">
                 <Button content="Get Started" key={1} link="/ai-chat" />
-                <Button content="Learn More" key={2} type="border" link="/groups" />
+                <Button content="Start in Community" key={2} type="border" link="/groups" />
               </div>
             </div>
           </div>
