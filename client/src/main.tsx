@@ -1,5 +1,6 @@
 // main.tsx
 import ReactDOM from "react-dom/client";
+import { Analytics } from '@vercel/analytics/react';
 import { StrictMode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
@@ -125,23 +126,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
         <ToastContainer />
+        <Analytics />
       </QueryClientProvider>
     </AuthProvider>
   </StrictMode>
 );
-
-// import { StrictMode } from "react";
-// import { createRoot } from "react-dom/client";
-// import { BrowserRouter, Route, Routes } from "react-router";
-// import App from "./App.tsx";
-// import "./index.css";
-
-// createRoot(document.getElementById("root")!).render(
-//   <StrictMode>
-//     <BrowserRouter>
-//       <Routes>
-//         <Route path="/*" element={<App />} />
-//       </Routes>
-//     </BrowserRouter>
-//   </StrictMode>
-// );
