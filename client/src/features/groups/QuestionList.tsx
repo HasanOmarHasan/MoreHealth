@@ -167,19 +167,19 @@ const QuestionList = () => {
       //   )
       // );
       queryClient.setQueryData<Question[]>(["questions", groupId], (old) =>
-      old?.map((question) => {
-        if (question.id === questionId && user) {
-          const hasUpvoted = question.upvotes.includes(user.id);
-          return {
-            ...question,
-            upvotes: hasUpvoted
-              ? question.upvotes.filter((id) => id !== user.id)
-              : [...question.upvotes, user.id],
-          };
-        }
-        return question;
-      })
-    );
+        old?.map((question) => {
+          if (question.id === questionId && user) {
+            const hasUpvoted = question.upvotes.includes(user.id);
+            return {
+              ...question,
+              upvotes: hasUpvoted
+                ? question.upvotes.filter((id) => id !== user.id)
+                : [...question.upvotes, user.id],
+            };
+          }
+          return question;
+        })
+      );
 
       return { previousQuestions };
     },
@@ -261,7 +261,7 @@ const QuestionList = () => {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-    }, 500);
+    }, 1000);
 
     return () => clearTimeout(handler);
   }, [searchTerm]);
@@ -457,7 +457,8 @@ const QuestionList = () => {
                             />
                           </span>
                           {question.user?.id === user?.id && (
-                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
+                            
+                            <span className=" bg-green-100 text-green-800 px-2 py-1 mr-2 rounded">
                               Your question
                             </span>
                           )}

@@ -34,6 +34,7 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLElement>(null);
@@ -51,7 +52,7 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
   });
 
   const { data: groups = [] as Group[], isLoading } = useQuery({
-    queryKey: ["groups", filters],
+    queryKey: ["groups",filters ],
 
     queryFn: () => {
       const params = new URLSearchParams();
@@ -208,6 +209,20 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Add this useEffect hook to handle debouncing
+useEffect(() => {
+  const timerId = setTimeout(() => {
+    setDebouncedSearchTerm(searchTerm);
+     handleFilterChange("search", searchTerm);
+  }, 1000); // 500ms delay
+
+  return () => {
+    clearTimeout(timerId);
+  };
+}, [searchTerm]);
+
+    
 
   return (
     <>
@@ -368,10 +383,12 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
             <div>
               <input
                 type="search"
-                value={filters.search}
-                onChange={(e) => {
-                  handleFilterChange("search", e.target.value);
-                  setDebouncedSearchTerm(e.target.value);
+                  // value={filters.search}
+                  value={searchTerm}
+                  onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  // handleFilterChange("search", e.target.value);
+                  // setDebouncedSearchTerm(e.target.value);
                 }}
                 className="w-full p-2 border rounded-md"
                 placeholder="Search 🔎... Creator usernames,Group names,Desc, etc."
