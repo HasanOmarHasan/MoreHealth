@@ -29,16 +29,11 @@ interface Group {
 }
 
 const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
-  const { user } = useAuth();
+  const { user, isLoggedIn } = useAuth();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
-
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-
-  // const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  // const [searchTerm, setSearchTerm] = useState("");
-
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLElement>(null);
@@ -57,7 +52,6 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
 
   const { data: groups = [] as Group[], isLoading } = useQuery({
     queryKey: ["groups", filters],
-    // queryFn: () => axiosClient.get("/groups/").then((res) => res.data),
 
     queryFn: () => {
       const params = new URLSearchParams();
@@ -106,6 +100,7 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
       queryClient.invalidateQueries({ queryKey: ["groups"] });
     },
     onError(error) {
+      console.log(error);
       toast.error(error.message);
     },
   });
@@ -195,6 +190,8 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
   //     setSelectedImage(file);
   //   }
   // };
+
+  console.log(isLoggedIn, " is login ");
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -382,30 +379,32 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
             </div>
 
             {/* create new  */}
-            <button
-              onClick={() => {
-                setSelectedGroup(null);
-                setIsModalOpen(true);
-              }}
-              className="sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors flex items-center gap-2  m-auto"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-5 h-5"
+            {isLoggedIn && (
+              <button
+                onClick={() => {
+                  setSelectedGroup(null);
+                  setIsModalOpen(true);
+                }}
+                className="sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors flex items-center gap-2  m-auto"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              Create New Group
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                Create New Group
+              </button>
+            )}
           </div>
 
           {!isLoading && groups?.length === 0 && (
@@ -437,7 +436,8 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
                     ? "Try adjusting your search or filters"
                     : "Get started by creating a new group"}
                 </p>
-                <div className="mt-6">
+                  <div className="mt-6">
+                    {isLoggedIn ? 
                   <button
                     onClick={() => setIsModalOpen(true)}
                     className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -456,7 +456,8 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
                       />
                     </svg>
                     Create Group
-                  </button>
+                      </button>
+                      : <p className="mt-1 text-sm text-gray-500"> Login Frist To Create Groups </p> }
                 </div>
               </div>
             </div>
@@ -538,20 +539,22 @@ const GroupList = ({ onSelect }: { onSelect: (groupId: number) => void }) => {
 
                           <div className="mt-2 flex justify-between items-center">
                             <div className="">
-                              <button
-                                onClick={() => joinMutation.mutate(group.id)}
-                                className={`px-4 py-2 rounded-lg ${
-                                  group.members.some(
-                                    (m: { id: number }) => m.id === user?.id
-                                  )
-                                    ? "bg-gray-200 text-gray-700"
-                                    : "bg-blue-100 text-blue-700"
-                                }`}
-                              >
-                                {group.members.some((m) => m.id === user?.id)
-                                  ? "Joined"
-                                  : "Join"}
-                              </button>
+                              {isLoggedIn && (
+                                <button
+                                  onClick={() => joinMutation.mutate(group.id)}
+                                  className={`px-4 py-2 rounded-lg ${
+                                    group.members.some(
+                                      (m: { id: number }) => m.id === user?.id
+                                    )
+                                      ? "bg-gray-200 text-gray-700"
+                                      : "bg-blue-100 text-blue-700"
+                                  }`}
+                                >
+                                  {group.members.some((m) => m.id === user?.id)
+                                    ? "Joined"
+                                    : "Join"}
+                                </button>
+                              )}
                             </div>
 
                             {user?.id === group.creator.id && (

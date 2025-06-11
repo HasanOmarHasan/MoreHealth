@@ -45,7 +45,7 @@ interface QuestionMutationContext {
 const QuestionList = () => {
   // const [expandedQuestions, setExpandedQuestions] = useState<Record<number, boolean>>({});
   const { groupId } = useParams<{ groupId: string }>();
-  const { user } = useAuth();
+  const { user, isLoggedIn } = useAuth();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(
@@ -151,21 +151,35 @@ const QuestionList = () => {
         groupId,
       ]);
 
+      // queryClient.setQueryData<Question[]>(["questions", groupId], (old) =>
+      //   old?.map((question) =>
+      //     question.id === questionId && user
+      //       ? {
+      //           ...question,
+      //           has_upvoted: !question.has_upvoted,
+      //           upvotes: question.has_upvoted
+      //             ? question.upvotes.filter((id: number) => id !== user?.id)
+      //             : ([...question.upvotes, user?.id].filter(
+      //                 Boolean
+      //               ) as number[]),
+      //         }
+      //       : question
+      //   )
+      // );
       queryClient.setQueryData<Question[]>(["questions", groupId], (old) =>
-        old?.map((question) =>
-          question.id === questionId
-            ? {
-                ...question,
-                has_upvoted: !question.has_upvoted,
-                upvotes: question.has_upvoted
-                  ? question.upvotes.filter((id: number) => id !== user?.id)
-                  : ([...question.upvotes, user?.id].filter(
-                      Boolean
-                    ) as number[]),
-              }
-            : question
-        )
-      );
+      old?.map((question) => {
+        if (question.id === questionId && user) {
+          const hasUpvoted = question.upvotes.includes(user.id);
+          return {
+            ...question,
+            upvotes: hasUpvoted
+              ? question.upvotes.filter((id) => id !== user.id)
+              : [...question.upvotes, user.id],
+          };
+        }
+        return question;
+      })
+    );
 
       return { previousQuestions };
     },
@@ -275,28 +289,30 @@ const QuestionList = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button
-              onClick={() => {
-                setSelectedQuestion(null);
-                setIsModalOpen(true);
-              }}
-              className="sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors flex items-center gap-2"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            {isLoggedIn && (
+              <button
+                onClick={() => {
+                  setSelectedQuestion(null);
+                  setIsModalOpen(true);
+                }}
+                className="sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors flex items-center gap-2"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              Ask Question
-            </button>
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                Ask Question
+              </button>
+            )}
           </div>
           {/* empity  statement */}
 
@@ -332,25 +348,32 @@ const QuestionList = () => {
                         : "Get started by creating a new question"}
                     </p>
                     <div className="mt-6">
-                      <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                      >
-                        <svg
-                          className="-ml-1 mr-2 h-5 w-5"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                          aria-hidden="true"
+                      {isLoggedIn ? (
+                        <button
+                          onClick={() => setIsModalOpen(true)}
+                          className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        Create question
-                      </button>
+                          <svg
+                            className="-ml-1 mr-2 h-5 w-5"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          Create question
+                        </button>
+                      ) : (
+                        <p className="mt-1 text-sm text-gray-500">
+                          {" "}
+                          Login Frist To Create questions{" "}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -369,14 +392,26 @@ const QuestionList = () => {
                   >
                     <div className="flex items-start justify-between">
                       <button
-                        onClick={() => handleUpvote(question.id as number)}
-                        className="flex flex-col items-center mr-4 group relative"
+                        onClick={() => {
+                          if (isLoggedIn) {
+                            handleUpvote(question.id as number);
+                          } else {
+                            toast.info("Please login to upvote");
+                          }
+                        }}
+                        className={`flex flex-col items-center mr-4 group relative ${
+                          !isLoggedIn ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
                         disabled={upvoteMutation.isPending}
                       >
-                        <HeartIcon filled={question.has_upvoted} />
+                        <HeartIcon
+                          filled={Boolean(
+                            user && question.upvotes.includes(user.id)
+                          )}
+                        />
                         <span
                           className={`text-sm mt-1 ${
-                            question.has_upvoted
+                            user && question.upvotes.includes(user.id)
                               ? "text-red-500"
                               : "text-gray-500"
                           }`}
@@ -561,94 +596,97 @@ const QuestionList = () => {
               )}
             </div>
 
-            <div className="rounded-lg bg-gray-200 text-center px-4">
-              <h2 className="text-xl font-bold my-4 text-gray-800">
-                Group Members
-              </h2>
-              <div className="space-y-4">
-                {questions[0]?.members?.map(
-                  (member: {
-                    id: number;
-                    username: string;
-                    type: string;
-                    specialization: string;
-                  }) => (
-                    <div
-                      key={member.id}
-                      className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-                            {member.username}
-                            {member.type === "doctor" && (
-                              <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                                Doctor
-                              </span>
+            {isLoggedIn && (
+              <div className="rounded-lg bg-gray-200 text-center px-4">
+                <h2 className="text-xl font-bold my-4 text-gray-800">
+                  Group Members
+                </h2>
+                <div className="space-y-4">
+                  {questions[0]?.members?.map(
+                    (member: {
+                      id: number;
+                      username: string;
+                      type: string;
+                      specialization: string;
+                    }) => (
+                      <div
+                        key={member.id}
+                        className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                              {member.username}
+                              {member.type === "doctor" && (
+                                <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                                  Doctor
+                                </span>
+                              )}
+                            </h3>
+                            {member.specialization && (
+                              <p className="text-sm text-gray-600 mt-1 text-start ">
+                                ( {member.specialization} )
+                              </p>
                             )}
-                          </h3>
-                          {member.specialization && (
-                            <p className="text-sm text-gray-600 mt-1 text-start ">
-                              ( {member.specialization} )
-                            </p>
-                          )}
-                        </div>
-
-                        {member.id !== user?.id && member.type === "doctor" && (
-                          <div className="flex gap-2 ml-4">
-                            <button
-                              onClick={() =>
-                                addFriendMutation.mutate(member.id)
-                              }
-                              disabled={addFriendMutation.isPending}
-                              className="p-1.5 rounded-full bg-green-100 hover:bg-green-200 text-green-700"
-                              data-tooltip="Add Friend"
-                            >
-                              <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                                />
-                              </svg>
-                            </button>
-
-                            <button
-                              onClick={() =>
-                                startChatMutation.mutate(member.id)
-                              }
-                              disabled={startChatMutation.isPending}
-                              className="p-1.5 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-700 "
-                              data-tooltip="Start Chat"
-                            >
-                              <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                                />
-                              </svg>
-                            </button>
                           </div>
-                        )}
+
+                          {member.id !== user?.id &&
+                            member.type === "doctor" && (
+                              <div className="flex gap-2 ml-4">
+                                <button
+                                  onClick={() =>
+                                    addFriendMutation.mutate(member.id)
+                                  }
+                                  disabled={addFriendMutation.isPending}
+                                  className="p-1.5 rounded-full bg-green-100 hover:bg-green-200 text-green-700"
+                                  data-tooltip="Add Friend"
+                                >
+                                  <svg
+                                    className="w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                                    />
+                                  </svg>
+                                </button>
+
+                                <button
+                                  onClick={() =>
+                                    startChatMutation.mutate(member.id)
+                                  }
+                                  disabled={startChatMutation.isPending}
+                                  className="p-1.5 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-700 "
+                                  data-tooltip="Start Chat"
+                                >
+                                  <svg
+                                    className="w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                                    />
+                                  </svg>
+                                </button>
+                              </div>
+                            )}
+                        </div>
                       </div>
-                    </div>
-                  )
-                )}
+                    )
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </>
       )}
