@@ -23,6 +23,15 @@ export default function Footer() {
             <li>
               <Link
                 className="text-gray-700 transition hover:text-gray-700/75"
+                to="/about"
+              >
+                {" "}
+                About{" "}
+              </Link>
+            </li>
+            <li>
+              <Link
+                className="text-gray-700 transition hover:text-gray-700/75"
                 to="/services"
               >
                 {" "}

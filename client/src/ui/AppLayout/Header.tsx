@@ -63,7 +63,7 @@ export default function Header() {
     }
 
     const commonLinks = [
-      { to: "/profile/General", text: "General" },
+      // { to: "/profile/General", text: "General" },
       { to: "/profile/Account", text: "Account" },
     ];
 
@@ -177,7 +177,7 @@ export default function Header() {
 
   return (
     //  bg-white/50
-    <header className=" sticky top-0 z-50 backdrop-blur-sm bg-blue-100/50">
+    <header className=" sticky top-0 z-50 backdrop-blur-sm bg-blue-100/50 ">
       <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
