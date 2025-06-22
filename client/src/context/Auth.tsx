@@ -23,14 +23,29 @@ interface AuthContextType {
   // setTkn: (token: string | null) => void;
   
 }
+interface ThemeContextType {
+  darkMode: boolean;
+  toggleTheme: () => void;
+}
 
-const AuthContext = createContext<AuthContextType | null>(null);
+interface AppContextType extends AuthContextType, ThemeContextType {}
+
+const AuthContext = createContext<AppContextType | null>(null);
+// const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   // const [tkn, setTkn] = useState(null)
+    // Theme state
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme');
+      return savedTheme ? savedTheme === 'dark' : false;
+    }
+    return false;
+  });
 
   const initializeAuth = () => {
     const token = localStorage.getItem('authToken');
@@ -53,6 +68,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => window.removeEventListener('storage', initializeAuth);
   }, []);
 
+   // Initialize theme
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [darkMode]);
+  
+  // Toggle theme function
+  const toggleTheme = () => {
+    setDarkMode(prev => !prev);
+  };
+
   const logout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
@@ -62,7 +93,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoggedIn, initializeAuth, logout  }}>
+    <AuthContext.Provider value={{ user, isLoggedIn, initializeAuth, logout , darkMode,
+      toggleTheme  }}>
       {children}
     </AuthContext.Provider>
   );
