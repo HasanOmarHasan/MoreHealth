@@ -18,20 +18,12 @@ export default function Footer() {
           </div>
 
           <ul className="mt-12 flex flex-wrap justify-center gap-6 md:gap-8 lg:mt-0 lg:justify-end lg:gap-12">
-            <li>
-              <Link
-                className="text-gray-700 transition hover:text-gray-700/75"
-                to="#"
-              >
-                {" "}
-                About{" "}
-              </Link>
-            </li>
+            
 
             <li>
               <Link
                 className="text-gray-700 transition hover:text-gray-700/75"
-                to="#"
+                to="/services"
               >
                 {" "}
                 Services{" "}
@@ -41,26 +33,26 @@ export default function Footer() {
             <li>
               <Link
                 className="text-gray-700 transition hover:text-gray-700/75"
-                to="#"
+                to="/services/ai-chat"
               >
                 {" "}
-                Projects{" "}
+                AI Chat {" "}
               </Link>
             </li>
 
             <li>
               <Link
                 className="text-gray-700 transition hover:text-gray-700/75"
-                to="#"
+                to="/groups"
               >
                 {" "}
-                Blog{" "}
+                Community{" "}
               </Link>
             </li>
           </ul>
         </div>
 
-        <p className="mt-12 text-center text-sm text-gray-500 lg:text-right">
+        <p className="mt-12 text-center text-sm text-gray-500  ">
           Copyright &copy; 2025. All rights reserved.
         </p>
       </div>

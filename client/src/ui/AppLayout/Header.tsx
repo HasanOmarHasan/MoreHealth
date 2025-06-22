@@ -10,7 +10,7 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isLoggedIn, logout } = useAuth();
 
-  const toggleServicesDropdown = () => setIsServicesOpen(!isServicesOpen);
+  // const toggleServicesDropdown = () => setIsServicesOpen(!isServicesOpen);
   const toggleUserMenuDropdown = () => setIsUserMenuOpen(!isUserMenuOpen);
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
@@ -33,7 +33,7 @@ export default function Header() {
         <>
           <div className="p-2">
             <p className="block rounded-lg px-4 py-2 text-sm text-gray-500">
-              Login first
+              Login First 
             </p>
           </div>
           <div className="p-2">
@@ -194,7 +194,7 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav aria-label="Global" className="hidden md:block">
             <ul className="flex items-center gap-6 text-base">
-              <li>
+              {/* <li>
                 <button
                   className={`cursor-pointer text-gray-500 transition hover:text-gray-500/75 inline-flex justify-center w-full items-center  `}
                   onClick={toggleServicesDropdown}
@@ -234,7 +234,7 @@ export default function Header() {
                       ].map((service, index) => (
                         <Link
                           key={index}
-                          to="#"
+                          to="/services"
                           className="block rounded-lg px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700"
                           role="menuitem"
                         >
@@ -244,11 +244,12 @@ export default function Header() {
                     </div>
                   </div>
                 )}
-              </li>
+              </li> */}
 
               {[
+                { linkName: "Symptom Checker ", to: "/services/symptom-checker" },
                 { linkName: "Groups", to: "/groups" },
-                { linkName: "Ai Chat", to: "/ai-chat" },
+                { linkName: "Ai Chat", to: "/services/ai-chat" },
               ].map((link, index) => (
                 <li key={index}>
                   <Link
@@ -330,9 +331,9 @@ export default function Header() {
       >
         <div className="bg-gray-100 p-4">
           {[
-            { linkName: "Service", to: "#" },
+            { linkName: "Service", to: "/services/" },
             { linkName: "Groups", to: "/groups" },
-            { linkName: "Ai Chat", to: "/ai-chat" },
+            { linkName: "Ai Chat", to: "/services/ai-chat" },
             {
               linkName: isLoggedIn ? "Dashboard" : "Login",
               to: isLoggedIn ? "/profile" : "Login",
