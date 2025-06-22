@@ -28,6 +28,9 @@ import General from "./features/profiles/General";
 import Account from "./features/profiles/Account";
 import DeleteAccount from "./features/profiles/DeleteAccount";
 import ResetPassword from "./features/profiles/ResetPassword";
+import Services from "./features/AI Services/Services";
+import AiChat from "./features/AI Services/Ai-Chat";
+import Symptom from "./features/AI Services/Symptom";
 
 const router = createBrowserRouter([
   {
@@ -87,8 +90,28 @@ const router = createBrowserRouter([
         },
       },
       {
-        element: <div className="h-screen"> Comming Soon </div>,
-        path: "/ai-chat/*",
+        element: <Services/>,
+        path: "/services",
+        loader: () => {
+          if (!localStorage.getItem("authToken")) {
+            return redirect("/login");
+          }
+          return null;
+        },
+      },
+      {
+        element: <AiChat/>,
+        path: "/services/ai-chat",
+        loader: () => {
+          if (!localStorage.getItem("authToken")) {
+            return redirect("/login");
+          }
+          return null;
+        },
+      },
+      {
+        element: <Symptom/>,
+        path: "/services/symptom-checker",
         loader: () => {
           if (!localStorage.getItem("authToken")) {
             return redirect("/login");
