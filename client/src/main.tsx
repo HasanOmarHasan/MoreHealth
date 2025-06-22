@@ -31,6 +31,8 @@ import ResetPassword from "./features/profiles/ResetPassword";
 import Services from "./features/AI Services/Services";
 import AiChat from "./features/AI Services/Ai-Chat";
 import Symptom from "./features/AI Services/Symptom";
+import AboutPage from "./ui/AppLayout/About";
+
 
 const router = createBrowserRouter([
   {
