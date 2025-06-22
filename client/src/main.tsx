@@ -128,6 +128,10 @@ const router = createBrowserRouter([
         element: <QuestionList />,
       },
       {
+        path: "/about",
+        element: <AboutPage />,
+      },
+      {
         path: "/groups/:groupId/questions/:questionId",
         element: <CommentsList />,
         loader: () => {
