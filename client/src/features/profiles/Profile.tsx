@@ -23,7 +23,7 @@ export default function Profile() {
 
   const menuConfig: Record<string, MenuItem[]> = {
     doctor: [
-      { label: "General", path: "/profile/General" },
+      // { label: "General", path: "/profile/General" },
       // {
       //   label: "Management",
       //   path: "#",
@@ -39,7 +39,7 @@ export default function Profile() {
       
     ],
     patient: [
-      { label: "General", path: "/profile/General" },
+      // { label: "General", path: "/profile/General" },
       // {
       //   label: "My Care",
       //   path: "#",
