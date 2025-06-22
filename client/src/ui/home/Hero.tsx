@@ -21,7 +21,7 @@ export default function Hero() {
               </p>
 
               <div className="mt-8 flex flex-wrap justify-center gap-4">
-                <Button content="Get Started" key={1} link="/ai-chat" />
+                <Button content="Get Started" key={1} link="/services/ai-chat" />
                 <Button content="Start in Community" key={2} type="border" link="/groups" />
               </div>
             </div>
