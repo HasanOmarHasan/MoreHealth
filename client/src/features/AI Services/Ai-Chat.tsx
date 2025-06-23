@@ -7,7 +7,7 @@ const AiChat: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
       {isServerAvailable ? (
-        <div className="w-full max-w-4xl h-[600px] bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="w-full  h-[1000px] bg-white rounded-lg shadow-lg overflow-hidden">
           <iframe 
             src={ai_chat_URL}
             title="AI Chat Service"
