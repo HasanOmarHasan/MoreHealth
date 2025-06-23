@@ -6,10 +6,16 @@ import InputItem from "../../ui/InputItem";
 import { toast } from "react-toastify";
 import axiosClient from "../../services/axiosClient";
 import { useAuth } from "../../context/Auth";
+import axios from "axios";
 
 interface SignupProps {
   userType: "patient" | "doctor";
   endpoint: string;
+}
+interface BackendErrorResponse {
+  message?: string;
+  errors?: Record<string, string>;
+  error?: string;
 }
 
 const Signup = ({ userType, endpoint }: SignupProps) => {
@@ -43,18 +49,32 @@ const Signup = ({ userType, endpoint }: SignupProps) => {
           delete newErrors.email;
         }
         break;
-      case "password":
-        if (
-          !/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/.test(
-            value
-          )
-        ) {
-          newErrors.password =
-            "Minimum 8 chars with letter, number & special char";
+      case "password": {
+        const requirements = [];
+        if (value.length < 8) requirements.push("8+ characters");
+        if (!/[a-z]/.test(value)) requirements.push("lowercase letter");
+        if (!/[A-Z]/.test(value)) requirements.push("uppercase letter");
+        if (!/[0-9]/.test(value)) requirements.push("number");
+        if (!/[!@#$%^&*]/.test(value)) requirements.push("special character");
+
+        if (requirements.length > 0) {
+          newErrors.password = `Needs: ${requirements.join(", ")}`;
         } else {
           delete newErrors.password;
         }
         break;
+      }
+      // if (
+      //   !/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/.test(
+      //     value
+      //   )
+      // ) {
+      //   newErrors.password =
+      //     "Minimum 8 chars with letter, number & special char";
+      // } else {
+      //   delete newErrors.password;
+      // }
+      // break;
       case "phone":
         if (!/^(\+20)?(010|011|012|015)\d{8}$/.test(value)) {
           newErrors.phone = "Invalid Egyptian phone number";
@@ -147,15 +167,76 @@ const Signup = ({ userType, endpoint }: SignupProps) => {
 
         // return userType === "doctor" ?  redirect("/login") : navigate("/");
       }
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Signup failed. Please check your inputs.";
-      console.log(error, "all error");
-      console.log(errorMessage, "error massage ");
+      // } catch (error: unknown) {
+      //   const errorMessage =
+      //     error instanceof Error
+      //       ? error.message
+      //       : "Signup failed. Please check your inputs.";
+      //   console.log(error, "all error");
+      //   console.log(errorMessage, "error massage ");
 
-      toast.error("Signup failed. Please check your inputs.");
+      //   toast.error("Signup failed. Please check your inputs.");
+      // } finally {
+      //   setIsSubmitting(false);
+      // }
+    } catch (error: unknown) {
+      let errorMessage = "Signup failed. Please check your inputs.";
+      const fieldErrors: Record<string, string> = {};
+
+      if (axios.isAxiosError<BackendErrorResponse>(error)) {
+        const serverError = error;
+
+        // Log detailed error for debugging
+        console.error("Signup Error:", {
+          status: serverError.response?.status,
+          data: serverError.response?.data,
+          config: serverError.config,
+        });
+
+        // Handle different error response formats
+        if (serverError.response?.data?.errors) {
+          // Field-specific errors
+          Object.entries(serverError.response.data.errors).forEach(
+            ([field, message]) => {
+              fieldErrors[field] = message;
+            }
+          );
+          setErrors(fieldErrors);
+        } else if (serverError.response?.data?.message) {
+          // General error message
+          errorMessage = serverError.response.data.message;
+        } else if (serverError.response?.data?.error) {
+          // Alternative error field
+          errorMessage = serverError.response.data.error;
+        }
+
+        // Handle specific HTTP status codes
+        switch (serverError.response?.status) {
+          case 400:
+            errorMessage = "Invalid request data";
+            break;
+          case 409:
+            errorMessage = "User already exists";
+            break;
+          case 422:
+            errorMessage = "Validation failed";
+            break;
+        }
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      // Only show toast if there are no field-specific errors
+      if (Object.keys(fieldErrors).length === 0) {
+        toast.error(errorMessage, {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -207,7 +288,7 @@ const Signup = ({ userType, endpoint }: SignupProps) => {
               />
               <InputItem
                 name="phone"
-                placeholder="Egypthian Phone"
+                placeholder="Egyptian Phone"
                 type="text"
                 error={touched.phone ? errors.phone : ""}
                 onBlur={handleBlur}
@@ -267,52 +348,7 @@ const Signup = ({ userType, endpoint }: SignupProps) => {
                   />
                 </>
               )}
-              {/* <div className="col-span-6 flex gap-4">
-                <span className="px-3 text-gray-700 transition-all">
-                  Add medical insurance :
-                </span>
-                <label
-                  htmlFor="AcceptConditions"
-                  className="relative inline-block h-8 w-14 cursor-pointer rounded-full bg-gray-300 transition [-webkit-tap-highlight-color:_transparent] has-[:checked]:bg-green-500"
-                >
-                  <input
-                    type="checkbox"
-                    name="medical_insurance"
-                    id="AcceptConditions"
-                    className="peer sr-only [&:checked_+_span_svg[data-checked-icon]]:block [&:checked_+_span_svg[data-unchecked-icon]]:hidden"
-                  />
 
-                  <span className="absolute inset-y-0 start-0 z-10 m-1 inline-flex size-6 items-center justify-center rounded-full bg-white text-gray-400 transition-all peer-checked:start-6 peer-checked:text-green-600">
-                    <svg
-                      data-unchecked-icon
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="size-4"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-
-                    <svg
-                      data-checked-icon
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="hidden size-4"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </span>
-                </label>
-              </div> */}
               <div className="col-span-6">
                 <label htmlFor="MarketingAccept" className="flex gap-4">
                   <input
@@ -368,7 +404,7 @@ const Signup = ({ userType, endpoint }: SignupProps) => {
       <div className="fixed inset-x-0 bottom-0 p-4">
         <div className="rounded-lg bg-yellow-200 px-4 py-3 text-black shadow-lg">
           <p className="text-center text-sm font-medium">
-            Are you a {userType === "patient" ? "Doctor" : "Patient"}?
+            Are you a {userType === "patient" ? "Doctor  " : "Patient  "}?
             <Link
               to={`/signup/${userType === "patient" ? "doctor" : "patient"}`}
               className="inline-block underline"

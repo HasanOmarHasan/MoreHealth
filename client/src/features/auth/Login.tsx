@@ -1,11 +1,18 @@
 // Login.tsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { AxiosError } from "axios"; // Correct import
 import axiosClient from "../../services/axiosClient";
 import Button from "../../ui/Button";
 import InputItem from "../../ui/InputItem";
 import { toast } from "react-toastify";
 import { useAuth } from "../../context/Auth";
+
+// Define backend error response structure
+interface BackendErrorResponse {
+  message?: string;
+  errors?: Record<string, string>;
+}
 
 const Login = () => {
   const navigate = useNavigate();
@@ -17,6 +24,8 @@ const Login = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+
+  
   const validateField = (name: string, value: string) => {
     const newErrors = { ...errors };
 
@@ -30,7 +39,7 @@ const Login = () => {
         break;
       case "password":
         if (value.length < 6) {
-          newErrors.password = "Password must be at least 6 characters";
+          newErrors.password = "Minimum 8 chars with lowercase letter, uper letter, number & special char";
         } else {
           delete newErrors.password;
         }
@@ -51,7 +60,7 @@ const Login = () => {
       localStorage.setItem("user", JSON.stringify(response.data.user));
       // setTkn(response.data.Token)
       initializeAuth();
-      
+
       // console.log(response.data.Token);
       // console.log(response, "response");
       if (response.status >= 200 && response.status < 300) {
@@ -61,12 +70,55 @@ const Login = () => {
         toast.error("Login failed. Please try again.");
       }
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error("Login failed Error message:", error.message);
-      } else {
-        console.error("Unknown error:", error);
+      console.log("Raw error:", error); // For debugging
+
+      let errorMessage = "Login failed. Please try again.";
+      let backendErrors: Record<string, string> = {};
+      // 1. Handle Axios errors (backend responses)
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "isAxiosError" in error
+      ) {
+        const axiosError = error as AxiosError<BackendErrorResponse>;
+        const response = axiosError.response;
+
+        console.log("Axios error details:", {
+          status: response?.status,
+          data: response?.data,
+        });
+
+        if (response) {
+          // Handle field-specific errors
+          if (response.data?.errors) {
+            backendErrors = response.data.errors;
+          }
+          // Handle general error messages
+          else if (response.data?.message) {
+            errorMessage = response.data.message;
+          }
+          // Specific HTTP status handling
+          else if (response.status === 401) {
+            errorMessage = "Invalid email or password";
+          } else if (response.status === 400) {
+            errorMessage = "Invalid request data";
+          }
+        }
+        setErrors(backendErrors);
       }
-      console.log(error);
+      // 2. Handle native JavaScript errors
+      else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      // 3. Handle non-error objects
+      else if (typeof error === "string") {
+        errorMessage = error;
+      }
+
+      // Only show toast if there are no field-specific errors
+      if (Object.keys(backendErrors).length === 0) {
+        toast.error(errorMessage);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -117,7 +169,6 @@ const Login = () => {
           {/* Password input similarly */}
 
           <Button
-            btnType="submit"
             disabled={
               !formData.email ||
               !formData.password ||
@@ -135,7 +186,6 @@ const Login = () => {
               </Link>
             </p>
             <p className=" text-sm text-gray-500">
-              
               <Link className="underline" to="/reset-password">
                 Forget password?
               </Link>
