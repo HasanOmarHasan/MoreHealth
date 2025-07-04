@@ -1,5 +1,6 @@
-# MoreHealth AI GenAI 
-MoreHealth is an AI-driven health assistant platform where users interact with an artificial intelligences genAI to describe symptoms and receive personalized treatment recommendations. The system leverages custom-built machine learning models to analyze user input, suggest evidence-based remedies, and offer additional AI-powered health services such as lifestyle advice, medication info, and preventive care tips.
+# Heal-Gen: AI-Powered Health Assistant
+
+**Heal-Gen** is a GenAI-powered healthcare platform that enables users to describe their symptoms and receive personalized medical advice. The system leverages intelligent machine learning models to offer evidence-based recommendations, health tips, lifestyle advice, and preventive care suggestions. The platform includes chat, forums, real-time notifications, and a social network for users and verified doctors.
 
 ## High-Level Architecture
 
@@ -27,13 +28,12 @@ MoreHealth is an AI-driven health assistant platform where users interact with a
   * `gunicorn` for production WSGI
 
 ### Frontend Stack
-* **Node.js 16+**
-* **React (latest stable)**
-* **Tailwind CSS (styling)**
-* **React Context API (state management)**
-* **React Router (client-side routing)**
-* **Axios (HTTP requests)**
-* **React Query(remote statu)**
+- **React (Latest stable)**
+- **Tailwind CSS**
+- **React Context API** – Global state management
+- **React Router** – Client-side routing
+- **Axios** – API communication
+- **React Query** – Remote data handling
 
 
 
@@ -104,90 +104,116 @@ MoreHealth is an AI-driven health assistant platform where users interact with a
 
 4. **Access the Application**
 
-   * Frontend: `http://localhost:3000`
-   * API: `http://localhost:8000/`
-   * sign up as doctor : `http://127.0.0.1:8000/auth/signup-doctor`
-   * sign up as regleur user : `http://127.0.0.1:8000/auth/signup`
-   * login : `http://127.0.0.1:8000//auth/login`
-   * test token : ` http://127.0.0.1:8000/auth/test-token`
+   * Frontend: `http://localhost:3000/`
+   * API Base: `http://localhost:8000/`
+
      
 
 ---
 
-## Key Features & Workflow
 
-### Authentication & Authorization
+## API Endpoints
 
-* **User Registration**: Registration with email verification via Google SMTP
-* **Password Management**: Forgot password and secure reset tokens
-* **JWT Authentication**: Access and refresh tokens to secure API endpoints 
-* **Protected Endpoints**: Role-based access control for sensitive resources
+### Authentication
+- `POST /auth/signup-doctor/` - Doctor registration
+- `POST /auth/signup/` - Regular user registration
+- `POST /auth/login/` - User login
+- `GET /auth/test-token/` - Token validation
 
-### User Profile Management
+### Chat System
+- `GET /chat/chat-rooms/` - List chat rooms
+- `POST /chat/start-chat/<int:user_id>/` - Start private chat
+- `GET /chat/messages/<int:room_id>/` - Room messages
 
-* **Profile Editing**: Update personal details and preferences
-* **Avatar System**: Upload, crop, and remove profile pictures
-* **Account Deletion**: Secure removal with confirmation workflow
-
-### Social & Notifications
-
-* **Friend System**: Send, accept, or decline friend requests
-* **Real-time Alerts**: Socket.IO-powered notifications for new requests and activities
-* **Activity Feed**: View recent friend activities and system messages
-
-### Chat Module
-
-* **1:1 Messaging**: Secure real-time chat between users and doctors
-* **Message History**: Persistent storage of conversations with timestamps
-* **Online Status**: Presence indicators for active users
+### Friends Management
+- `GET /chat/friends/` - List friends
+- `POST /chat/friends/<int:user_id>/` - Add friend
+- `GET /chat/friend-requests/` - List friend requests
+- `PUT/DELETE /chat/friend-requests/<int:pk>/` - Manage requests
 
 ### Community Forum
-
-* **Discussion Groups**: Create and join topic-based communities
-* **Q\&A System**: Post questions with threaded replies and comments
-* **Content Moderation**: Edit or delete your own posts and replies
-* **Advanced Search**: Filter , popularity, or recency , can search by groub name , mamber name , creater , username , own groub , describtion and so in 
-* **Edit Tracking**: Visual indicators showing when content was last modified
-
-### Admin Verification:
-
-* Admin dashboard for verifying doctor profiles
-* Review submitted credentials and certifications
-* Approve or reject doctor accounts based on verification status
-* Role assignment for verified doctors with elevated permissions
+- `GET/POST /groups/` - List/create groups
+- `GET/PUT/DELETE /groups/<int:pk>/` - Group details
+- `POST /groups/<int:pk>/join/` - Join/leave group
+- `GET/POST /groups/<int:group_pk>/questions/` - Group questions
+- `GET/PUT/DELETE /questions/<int:pk>/` - Question details
+- `GET/POST /questions/<int:question_pk>/comments/` - Question comments
+- `GET/PUT/DELETE /comments/<int:pk>/` - Comment details
+- `GET/POST /comments/<int:parent_pk>/replies/` - Comment replies
+- `POST /upvote/<str:model_type>/<int:pk>/` - Upvote content
 
 
 
 ---
-# screen and video 
 
-![home Page](screenshots/homepage.png)
-### Commenity
-![groups Page](screenshots/groups.png)
-![quetion Page](screenshots/quetion.png)
-![ verify doctor ](screenshots/verify_doctor.png)
-### Auth
-![ login page](screenshots/login.png)
-![ signup page](screenshots/signup.png)
-### Chat and Frinds
-![ friend reqest page](screenshots/friend-reqest.png)
-![ chat-message page](screenshots/chat-message.png)
-![ chat-room page](screenshots/chat-chatroom.png)
+## Analytics with Vercel
 
-### AI and deep learing model
-![ chat bot page](screenshots/chatbot.jpg)
-![ medical-symptom-analyzer page](screenshots/medical-symptom-analyzer.png)
+We utilize Vercel's built-in analytics suite to monitor and optimize application performance:
 
-### video 
+1. **Performance Metrics**
+   - Real-time Core Web Vitals tracking
+   - Server response time monitoring
+   - Client-side rendering performance
+   - Resource loading optimization
 
-<video width="600" controls  width="700" controls autoplay>
-  <source src="screenshots/morehealth.MP4" type="video/mp4">
-</video>
+2. **User Engagement**
+   - Active session tracking
+   - User retention analysis
+   - Feature adoption rates
+   - Popular content identification
 
-Download 
-![ healthmore video](screenshots/morehealth.MP4)
+3. **Error Monitoring**
+   - Client-side error logging
+   - API failure rate tracking
+   - Performance regression alerts
 
-Or Youtube  [link](https://youtu.be/SjC81bYbjKM?si=FislHnPxG2mNxOyn)
+4. **Traffic Analysis**
+   - Geographical user distribution
+   - Device and browser statistics
+   - Traffic source attribution
+
+---
+
+## Key Features
+
+### User Management
+- Role-based registration (User/Doctor)
+- JWT authentication with refresh tokens
+- Email verification workflow
+- Password reset functionality
+- Profile management with avatar upload
+
+### Health Assistant
+- Symptom analysis via GenAI
+- Personalized treatment recommendations
+- Medication information database
+- Preventive care suggestions
+
+### Social Features
+- Friend system with request management
+- Real-time notifications (Socket.IO)
+- Activity feed with friend updates
+- 1:1 encrypted messaging with history
+- Online status indicators
+
+### Community Forum
+- Topic-based discussion groups
+- Q&A system with threaded replies
+- Content voting system
+- Advanced search functionality
+- Edit history tracking
+- Content moderation tools
+
+### Doctor Verification
+- Admin dashboard for credential validation
+- Certification review system
+- Role-based permissions
+- Approval/rejection workflow
+
+---
+
+## Live Demo
+[Heal-Gen Live Application](https://heal-gen.vercel.app/)  
 
 
 
